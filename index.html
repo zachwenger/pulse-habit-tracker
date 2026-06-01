@@ -325,6 +325,52 @@
     .stats { grid-template-columns: repeat(2, 1fr); }
     .detail-title { font-size: 38px; }
   }
+
+  /* ── INTRO overlay (one-shot first run + "?" button) ── */
+  .intro { position: fixed; inset: 0; z-index: 70; display: none;
+    background: rgba(2,5,16,0.94); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    padding: 20px; overflow-y: auto; }
+  .intro.open { display: flex; align-items: center; justify-content: center; animation: fadeIn .25s ease; }
+  .intro-inner { width: 100%; max-width: 460px; padding: 32px 24px;
+    background: linear-gradient(180deg, rgba(13,18,40,0.97), rgba(8,12,28,0.97));
+    border: 1px solid rgba(0,224,255,0.3); border-radius: 18px;
+    box-shadow: 0 30px 80px -20px rgba(0,0,0,0.7), 0 0 60px -10px rgba(0,224,255,0.2);
+    position: relative;
+  }
+  .intro-tag { font-family: var(--f-mono); font-size: 10px; letter-spacing: 4px;
+    color: var(--cy); text-transform: uppercase; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .intro-tag::before { content:''; width: 5px; height: 5px; background: var(--cy);
+    border-radius: 50%; box-shadow: var(--cy-glow); }
+  .intro-title { font-family: var(--f-display); font-size: 38px; line-height: 1; letter-spacing: -1.5px;
+    color: var(--fg); margin-bottom: 14px; }
+  .intro-title em { color: var(--cy); font-style: italic;
+    text-shadow: 0 0 18px rgba(0,224,255,0.4); }
+  .intro-body { font-size: 14px; color: var(--fg-2); line-height: 1.7; margin-bottom: 22px; }
+  .intro-body b { color: var(--cy-hi); font-weight: 500; }
+  .intro-list { font-family: var(--f-mono); font-size: 12px; color: var(--fg-3); line-height: 1.9;
+    padding: 14px 16px; border-radius: 10px;
+    background: rgba(255,255,255,0.02); border: 1px solid var(--line); margin-bottom: 22px; letter-spacing: .5px; }
+  .intro-list b { color: var(--cy-hi); font-weight: 500; }
+  .intro-actions { display: flex; gap: 8px; }
+  .intro-actions button { flex: 1; padding: 14px;
+    border-radius: 12px; cursor: pointer; font-family: var(--f-mono);
+    font-size: 11px; font-weight: 500; letter-spacing: 3px; text-transform: uppercase;
+    transition: all .2s;
+  }
+  .intro-primary { background: linear-gradient(135deg, var(--cy-hi), var(--cy)); color: #020510;
+    border: none; box-shadow: 0 8px 20px -4px rgba(0,224,255,0.5), inset 0 1px 0 rgba(255,255,255,0.3); }
+  .intro-primary:active { transform: scale(0.97); }
+  .intro-secondary { background: rgba(255,255,255,0.03); border: 1px solid var(--line); color: var(--fg-2); }
+  .intro-secondary:hover { border-color: var(--cy); color: var(--cy-hi); }
+  .intro-foot { margin-top: 18px; font-family: var(--f-mono); font-size: 9px; letter-spacing: 2px;
+    color: var(--fg-5); text-transform: uppercase; text-align: center; }
+  .intro-foot a { color: var(--fg-4); text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.1); }
+  .intro-foot a:hover { color: var(--cy-hi); border-color: var(--cy-hi); }
+
+  .info-btn { background: none; border: 1px solid var(--line); color: var(--fg-3);
+    width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
+    font-family: var(--f-mono); font-size: 11px; transition: all .2s; margin-left: 8px; }
+  .info-btn:hover { border-color: var(--cy); color: var(--cy-hi); }
 </style>
 </head>
 <body>
@@ -333,7 +379,7 @@
 
   <div class="wrap" id="main">
     <div class="head">
-      <div class="logo"><span class="logo-dot"></span>PULSE</div>
+      <div class="logo"><span class="logo-dot"></span>PULSE<button class="info-btn" id="info-btn" aria-label="About">?</button></div>
       <div class="head-right" id="today-meta">—</div>
     </div>
 
@@ -410,6 +456,33 @@
   <button class="fab" id="fab" aria-label="Add habit">
     <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
   </button>
+
+  <!-- Intro / about -->
+  <div class="intro" id="intro">
+    <div class="intro-inner">
+      <div class="intro-tag">About this app</div>
+      <div class="intro-title"><em>PULSE</em></div>
+      <div class="intro-body">
+        Minimal habit tracker. <b>One tap a day</b> per habit, and every long-press opens a
+        <b>per-habit consistency graph</b> — a 12-month heatmap plus a 30-day rolling-completion
+        line. Single-file vanilla PWA, single cyan accent, offline-first, installable on phone.
+      </div>
+      <div class="intro-list">
+        <div><b>Tap</b> a row · mark today done</div>
+        <div><b>Long-press</b> a row · open the graph + stats</div>
+        <div><b>Tap +</b> · add a new habit</div>
+        <div><b>Esc</b> · close any overlay</div>
+      </div>
+      <div class="intro-actions">
+        <button class="intro-secondary" id="intro-clear">Reset data</button>
+        <button class="intro-primary" id="intro-go">Start</button>
+      </div>
+      <div class="intro-foot">
+        Built by <a href="https://github.com/zachwenger" target="_blank" rel="noopener">@zachwenger</a> ·
+        <a href="https://github.com/zachwenger/pulse" target="_blank" rel="noopener">Source</a>
+      </div>
+    </div>
+  </div>
 
 <script>
   /* ===== Store ===== */
@@ -762,6 +835,23 @@
   setTodayMeta(); setInterval(setTodayMeta, 60000);
 
   renderList();
+
+  /* ===== Intro overlay (one-shot first run + ? button always opens it) ===== */
+  const intro = document.getElementById('intro');
+  function openIntro() { intro.classList.add('open'); document.body.style.overflow = 'hidden'; }
+  function closeIntro() { intro.classList.remove('open'); document.body.style.overflow = ''; Store.set('introSeen', true); }
+  document.getElementById('info-btn').addEventListener('click', openIntro);
+  document.getElementById('intro-go').addEventListener('click', closeIntro);
+  document.getElementById('intro-clear').addEventListener('click', () => {
+    if (!confirm('Wipe all habits and history? This cannot be undone.')) return;
+    Object.keys(localStorage).filter(k => k.startsWith('pulse.')).forEach(k => localStorage.removeItem(k));
+    location.reload();
+  });
+  intro.addEventListener('click', e => { if (e.target === intro) closeIntro(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && intro.classList.contains('open')) closeIntro();
+  });
+  if (!Store.get('introSeen', false)) openIntro();
 
   /* ===== PWA ===== */
   if ('serviceWorker' in navigator) {
