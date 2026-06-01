@@ -7,13 +7,23 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="PULSE">
+<!-- ── SECURITY HEADERS (meta-tag fallback; real headers via static-host config) ──
+     CSP intentionally allows 'unsafe-inline' for both script + style because PULSE
+     is a single-file PWA with one inline <script> and many inline <style> blocks.
+     No 'unsafe-eval' means new Function() / eval() are blocked. Everything else
+     is locked to same-origin + the Google Fonts CDN. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'none'; manifest-src 'self'; worker-src 'self'">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta name="referrer" content="no-referrer">
+<meta name="permissions-policy" content="geolocation=(), microphone=(), camera=(), payment=(), usb=(), accelerometer=()">
+<meta name="robots" content="index, follow">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon.svg">
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <title>PULSE</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" referrerpolicy="no-referrer" crossorigin="anonymous">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
   html, body { overscroll-behavior-y: contain; }
@@ -1171,14 +1181,73 @@
   </div>
 
 <script>
-  /* ===== Store ===== */
+  /* ===== Hardened store + input sanitizers =====
+     - try/catch around all parsing
+     - silent fallback to default on tamper / corruption
+     - bounded input sizes prevent storage-blowup DoS
+     - validateHabit() drops malformed entries on load            */
+  const HARD_LIMITS = {
+    MAX_HABITS: 30,
+    NAME_LEN: 60,
+    UNIT_LEN: 12,
+    LOG_DAYS: 4000,       // ~11 years of daily checks · per habit
+    MAX_QTY: 1_000_000,   // sanity bound on any single qty cell
+    MAX_TARGET: 1_000_000,
+    MAX_STEP: 100_000,
+  };
   const Store = {
-    get(k, d) { try { const v = localStorage.getItem('pulse.'+k); return v === null ? d : JSON.parse(v); } catch { return d; } },
-    set(k, v) { localStorage.setItem('pulse.'+k, JSON.stringify(v)); },
+    get(k, d) {
+      try {
+        const v = localStorage.getItem('pulse.'+k);
+        if (v === null) return d;
+        const p = JSON.parse(v);
+        // type-match against the supplied default to prevent prototype-pollution-style swaps
+        if (d !== undefined && p !== null && typeof p !== typeof d && !(Array.isArray(p) && Array.isArray(d))) return d;
+        return p;
+      } catch { return d; }
+    },
+    set(k, v) {
+      try { localStorage.setItem('pulse.'+k, JSON.stringify(v)); }
+      catch (e) { console.warn('storage write failed', e); }
+    },
   };
   const uid = () => Math.random().toString(36).slice(2, 9);
   const today = () => new Date().toLocaleDateString('en-CA');
-  const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  // HTML entity escape — every place we render user-controlled text into innerHTML
+  // routes through this. It's the single XSS chokepoint.
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  // Clamp helper for any user-controlled numeric field
+  const clamp = (n, min, max) => Math.max(min, Math.min(max, isFinite(+n) ? +n : min));
+  // Bounded string — trim + cap length to prevent multi-MB localStorage writes
+  const safeStr = (s, max) => String(s ?? '').replace(/[\x00-\x1f\x7f]/g, '').trim().slice(0, max);
+  // Validate + repair a habit object pulled from storage. Drops on hard fail.
+  function validateHabit(h) {
+    if (!h || typeof h !== 'object') return null;
+    if (typeof h.id !== 'string' || !h.id) h.id = uid();
+    h.name = safeStr(h.name, HARD_LIMITS.NAME_LEN);
+    if (!h.name) return null; // habit with no name = drop
+    h.unit = safeStr(h.unit, HARD_LIMITS.UNIT_LEN);
+    h.target = clamp(h.target, 0, HARD_LIMITS.MAX_TARGET);
+    h.step   = clamp(h.step,   0, HARD_LIMITS.MAX_STEP);
+    if (!Array.isArray(h.log)) h.log = [];
+    // dedup + format-check log dates, cap length
+    h.log = [...new Set(h.log.filter(d => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d)))].slice(-HARD_LIMITS.LOG_DAYS);
+    h.qty = (h.qty && typeof h.qty === 'object') ? h.qty : {};
+    // sanitise qty values + keys
+    const cleanQty = {};
+    for (const [k, v] of Object.entries(h.qty)) {
+      if (typeof k === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(k) && isFinite(+v)) {
+        cleanQty[k] = clamp(v, 0, HARD_LIMITS.MAX_QTY);
+      }
+    }
+    h.qty = cleanQty;
+    h.color = ['cyan','pink','lime','amber','violet','rose'].includes(h.color) ? h.color : 'cyan';
+    h.tod = ['morning','afternoon','evening','anytime'].includes(h.tod) ? h.tod : 'anytime';
+    h.polarity = (h.polarity === 'neg') ? 'neg' : 'pos';
+    h.quality = (h.quality && typeof h.quality === 'object') ? h.quality : {};
+    if (!h.created || !isFinite(h.created)) h.created = Date.now();
+    return h;
+  }
 
   // Unit presets — referenced against Habitify, Productive, Streaks, Strides.
   // Categories: count · time · volume · distance. No yes/no option — that's the default
@@ -1229,20 +1298,18 @@
     ];
     Store.set('habits', habits);
   }
-  // back-fill new shape on older saved habits
+  // Validate + clamp every habit on load — drops malformed entries
+  // (defends against manual localStorage tampering or import of bad data).
+  if (!Array.isArray(habits)) habits = [];
+  habits = habits.map(validateHabit).filter(Boolean).slice(0, HARD_LIMITS.MAX_HABITS);
+  // Back-fill step from preset if missing (post-validate so we know shape is sane)
   habits.forEach(h => {
-    if (!h.qty) h.qty = {};
-    if (typeof h.target !== 'number') h.target = 0;
-    if (!h.unit) h.unit = '';
-    if (typeof h.step !== 'number') {
+    if (!h.step) {
       const p = unitPreset(h.unit);
-      h.step = p.step || 1;
+      h.step = p.step || (h.target > 0 ? 1 : 0);
     }
-    if (!h.color) h.color = 'cyan';
-    if (!h.tod) h.tod = 'anytime';
-    if (!h.polarity) h.polarity = 'pos';
-    if (!h.quality) h.quality = {};
   });
+  Store.set('habits', habits);
 
   /* ===== Streak + consistency helpers ===== */
   function streak(log) {
@@ -1594,14 +1661,25 @@
   });
 
   function addHabit() {
-    const v = addInput.value.trim(); if (!v) return;
+    const v = safeStr(addInput.value, HARD_LIMITS.NAME_LEN); if (!v) return;
+    // hard cap on total habit count — prevents storage-blowup from rapid-add abuse
+    if (habits.length >= HARD_LIMITS.MAX_HABITS) {
+      toast(`Limit reached · max ${HARD_LIMITS.MAX_HABITS} habits.`);
+      return;
+    }
     const preset = unitPreset(currentUnitKey);
-    const target = preset.target > 0 ? (parseFloat(addTarget.value) || preset.target) : 0;
+    const target = preset.target > 0
+      ? clamp(parseFloat(addTarget.value) || preset.target, 1, HARD_LIMITS.MAX_TARGET)
+      : 0;
     const step = preset.step || (target > 0 ? Math.max(1, Math.round(target / 8)) : 0);
+    // Validate option-pill state before save (defense vs DOM tampering)
+    const color = ['cyan','pink','lime','amber','violet','rose'].includes(currentColor) ? currentColor : 'cyan';
+    const tod = ['morning','afternoon','evening','anytime'].includes(currentTod) ? currentTod : 'anytime';
+    const polarity = (currentPol === 'neg') ? 'neg' : 'pos';
     habits.push({
       id: uid(), name: v, log: [], created: Date.now(),
       target, unit: currentUnitKey, step, qty: {},
-      color: currentColor, tod: currentTod, polarity: currentPol, quality: {},
+      color, tod, polarity, quality: {},
     });
     Store.set('habits', habits);
     addInput.value = '';

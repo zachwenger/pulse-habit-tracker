@@ -246,6 +246,22 @@ All data lives in `localStorage` on your device under the `pulse.*` namespace. N
 
 **Reset everything:** Open the `?` → **Reset data** button.
 
+## Security
+
+Full threat model + hardening checklist in [SECURITY.md](SECURITY.md). TL;DR:
+
+- **Strict CSP** meta tag: `default-src 'self'`, no remote scripts, no `eval`, no `unsafe-eval`, fonts only from Google Fonts CDN
+- **`frame-ancestors 'none'`** — clickjacking blocked
+- **`Permissions-Policy`** denies geolocation / mic / camera / payment / USB / accelerometer
+- **`Referrer-Policy: no-referrer`** — never leaks current URL on outbound requests
+- **Single `esc()` chokepoint** — every user-string rendered through one HTML-entity escape (the single XSS chokepoint)
+- **`validateHabit()` on every load** — drops malformed entries from tampered storage, clamps numeric fields to hard limits (30 habits max, 60 char name, 4000 log entries, etc.), restricts color/tod/polarity to enum values
+- **Storage-blowup-proof** — `HARD_LIMITS` cap every user-influenced size
+- **No `eval`, no `Function()`, no remote scripts**
+- **Type-check on JSON.parse** — `Store.get` rejects parsed payloads that don't match the default's typeof (prototype-pollution-style defense)
+
+To report a vulnerability, email `zachwenger.dev@gmail.com` with `[PULSE security]` in the subject. Don't open a public issue with exploit details.
+
 ---
 
 ## Roadmap
