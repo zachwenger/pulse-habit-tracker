@@ -40,6 +40,14 @@
     --f-mono: 'JetBrains Mono', ui-monospace, monospace;
     --f-display: 'Instrument Serif', 'Times New Roman', serif;
   }
+  body[data-theme="mono"] {
+    --cy: #ffffff; --cy-hi: #ffffff; --cy-dim: #6e6e6e;
+    --cy-rgb: 255,255,255; --cy-hi-rgb: 255,255,255; --aurora-2-rgb: 180,180,180;
+    --bg: #050505;
+    --line: #1a1a1a;
+    --surface: #0c0c0c;
+    --fg-3: #aaaaaa; --fg-4: #555555; --fg-5: #232323;
+  }
   body[data-theme="pink"] {
     --cy: #ff3ea0; --cy-hi: #ff89c8; --cy-dim: #8a1a55;
     --cy-rgb: 255,62,160; --cy-hi-rgb: 255,137,200; --aurora-2-rgb: 168,92,255;
@@ -47,30 +55,6 @@
     --line: #2c1530;
     --surface: #18091c;
     --fg-3: #b889a8; --fg-4: #6e4a5e; --fg-5: #2a1828;
-  }
-  body[data-theme="lime"] {
-    --cy: #7fff5e; --cy-hi: #b4ff9e; --cy-dim: #2e7e1a;
-    --cy-rgb: 127,255,94; --cy-hi-rgb: 180,255,158; --aurora-2-rgb: 92,168,255;
-    --bg: #050f08;
-    --line: #15301a;
-    --surface: #091808;
-    --fg-3: #8db889; --fg-4: #4a6a48; --fg-5: #182a18;
-  }
-  body[data-theme="amber"] {
-    --cy: #ffb547; --cy-hi: #ffd28a; --cy-dim: #8a5e1a;
-    --cy-rgb: 255,181,71; --cy-hi-rgb: 255,210,138; --aurora-2-rgb: 255,92,150;
-    --bg: #110a05;
-    --line: #322012;
-    --surface: #1c1208;
-    --fg-3: #b89a7a; --fg-4: #6a5638; --fg-5: #2a2010;
-  }
-  body[data-theme="violet"] {
-    --cy: #a76bff; --cy-hi: #caa3ff; --cy-dim: #553e8e;
-    --cy-rgb: 167,107,255; --cy-hi-rgb: 202,163,255; --aurora-2-rgb: 92,200,255;
-    --bg: #0a0518;
-    --line: #20183a;
-    --surface: #100a26;
-    --fg-3: #a99eb8; --fg-4: #5e556a; --fg-5: #221c30;
   }
   body {
     background: var(--bg); color: var(--fg);
@@ -553,9 +537,7 @@
   .theme-dot.active { border-color: #fff; box-shadow: 0 0 12px currentColor; }
   .theme-dot[data-t=""] { color: #00e0ff; background: radial-gradient(circle, #80f0ff, #00e0ff); }
   .theme-dot[data-t="pink"] { color: #ff3ea0; background: radial-gradient(circle, #ff89c8, #ff3ea0); }
-  .theme-dot[data-t="lime"] { color: #7fff5e; background: radial-gradient(circle, #b4ff9e, #7fff5e); }
-  .theme-dot[data-t="amber"] { color: #ffb547; background: radial-gradient(circle, #ffd28a, #ffb547); }
-  .theme-dot[data-t="violet"] { color: #a76bff; background: radial-gradient(circle, #caa3ff, #a76bff); }
+  .theme-dot[data-t="mono"] { color: #fff; background: radial-gradient(circle, #fff, #888); }
 
   /* day-of-week insight (detail view) */
   .dow-card { padding: 14px 16px; border-radius: 12px;
@@ -593,9 +575,7 @@
     <div class="theme-row" id="theme-row" style="justify-content: flex-end; margin: -10px 0 22px">
       <span class="theme-dot active" data-t="" title="Cyan"></span>
       <span class="theme-dot" data-t="pink" title="Pink"></span>
-      <span class="theme-dot" data-t="lime" title="Lime"></span>
-      <span class="theme-dot" data-t="amber" title="Amber"></span>
-      <span class="theme-dot" data-t="violet" title="Violet"></span>
+      <span class="theme-dot" data-t="mono" title="Mono LED"></span>
     </div>
 
     <div class="hero">
