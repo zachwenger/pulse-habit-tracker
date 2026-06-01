@@ -125,6 +125,24 @@ The hero text shifts based on today's progress:
 - Some done, some left → `N left.`
 - All done → `Locked in.`
 
+### Premium polish layer
+
+Every interaction has motion. Designed to feel like a paid app, not a side project.
+
+- **Spring physics on every tap** — check circle bounces, FAB depresses, theme dots punch in/out (cubic-bezier `.34, 1.56, .64, 1`)
+- **Staggered entrance animations** — habit rows fade up in waves (50ms apart) on first paint, stat cards stagger in on detail open, weekday bars grow up sequentially, heatmap cells animate per index
+- **Number tick-up** — current streak, best streak, total days, and 30-day % all count up smoothly from 0 to their value (800ms cubic ease-out) when the detail view opens
+- **Live SVG line draw** — the 30-day completion chart draws progressively from left to right with stroke-dashoffset trick (1.4s ease), the dot pops in at the end
+- **Card depth on hover** — habit rows lift 1px + show a soft shadow + accent inner border glow
+- **Tap ripple** — checking off a habit fires a radial accent-color pulse outward from the circle
+- **Progress bar shimmer** — quantitative habits' progress bars have a moving sheen overlay
+- **Logo dot breathe** — pulses scale + opacity + glow on a 3s loop
+- **Hero sheen** — italicized accent words on the headline get a periodic 14s gradient sweep
+- **Bell ring animation** — toggling a time-of-day reminder makes the bell shake side to side before re-rendering
+- **Glass top highlight** — every card has a faint glossy 1px top edge for material depth
+- **Smooth scroll** + **text-rendering: optimizeLegibility** + antialiased fonts
+- **Respects `prefers-reduced-motion`** — all animations collapse to instant for users with vestibular sensitivity
+
 ### About / intro overlay
 
 First-time visitors see a one-shot intro explaining the gestures. The `?` button next to the PULSE logo reopens it anytime. The intro also has a `Reset data` button that wipes localStorage.
