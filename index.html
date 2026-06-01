@@ -137,14 +137,23 @@
   .habits { display: flex; flex-direction: column; gap: 14px; }
   .habit {
     position: relative;
-    padding: 18px 18px;
+    padding: 18px 14px 18px 18px;
     background: linear-gradient(180deg, rgba(13,18,40,0.7), rgba(8,12,28,0.7));
     border: 1px solid var(--line);
     border-radius: 16px;
-    display: grid; grid-template-columns: 36px 1fr; gap: 14px; align-items: center;
+    display: grid; grid-template-columns: 36px 1fr 18px; gap: 14px; align-items: center;
     transition: border-color .25s ease, transform .15s ease, box-shadow .25s ease;
-    cursor: pointer; -webkit-user-select: none; user-select: none;
+    -webkit-user-select: none; user-select: none;
   }
+  .h-check, .h-detail-chev { cursor: pointer; }
+  .h-detail-chev {
+    color: var(--fg-4); font-family: var(--f-mono); font-size: 18px; text-align: center;
+    transition: color .2s ease, transform .2s ease; line-height: 1;
+    width: 18px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 8px;
+  }
+  .h-detail-chev:hover { color: var(--cy-hi); transform: translateX(2px); }
+  .h-body { cursor: pointer; }
+  .h-body:hover .h-name { color: var(--cy-hi); }
   .habit:hover { border-color: rgba(var(--cy-rgb),0.2); }
   .habit:active { transform: scale(0.99); }
   .habit.done { border-color: rgba(var(--cy-rgb),0.35);
@@ -716,10 +725,11 @@
         line. Single-file vanilla PWA, single cyan accent, offline-first, installable on phone.
       </div>
       <div class="intro-list">
-        <div><b>Tap</b> a row · mark today done</div>
-        <div><b>Long-press</b> a row · open the graph + stats</div>
+        <div><b>Tap the circle</b> · mark today done</div>
+        <div><b>Tap the name or ›</b> · open the consistency graph</div>
+        <div>In detail view: <b>Rename · Delete</b></div>
         <div><b>Tap +</b> · add a new habit</div>
-        <div><b>Esc</b> · close any overlay</div>
+        <div><b>?</b> top-left · open this guide anytime</div>
       </div>
       <div class="intro-actions">
         <button class="intro-secondary" id="intro-clear">Reset data</button>
@@ -848,14 +858,15 @@
         const done = h.log.includes(t);
         const s = streak(h.log);
         return `<div class="habit ${done ? 'done' : ''}" data-id="${h.id}">
-          <div class="h-check"></div>
-          <div class="h-body">
+          <div class="h-check" data-action="check"></div>
+          <div class="h-body" data-action="detail">
             <div class="h-top">
               <div class="h-name">${esc(h.name)}</div>
               <div class="h-streak ${s === 0 ? 'cold' : ''}">${s > 0 ? `<b>${s}d</b> streak` : 'no streak'}</div>
             </div>
             <div class="h-trail">${trailCells(h.log)}</div>
           </div>
+          <div class="h-detail-chev" data-action="detail" aria-label="View details">›</div>
         </div>`;
       }).join('');
     }
@@ -874,53 +885,39 @@
     else heroEl.innerHTML = `<em>${habits.length - doneToday}</em> left.`;
   }
 
-  /* ===== Toggle ===== */
+  /* ===== Habit row interactions =====
+     - tap the LEFT check circle      → mark today done/undone
+     - tap the BODY (name + trail) or CHEVRON on the right → open detail
+       (which has rename + delete + 12-month consistency graph)        */
   listEl.addEventListener('click', e => {
     const row = e.target.closest('.habit'); if (!row) return;
     const id = row.dataset.id;
     const h = habits.find(x => x.id === id); if (!h) return;
-    const t = today();
-    const wasDone = h.log.includes(t);
-    if (wasDone) {
-      h.log = h.log.filter(d => d !== t);
-    } else {
-      h.log.push(t);
-      if (navigator.vibrate) navigator.vibrate(12);
-      const r = row.getBoundingClientRect();
-      burst(r.left + 36, r.top + 35, 14);
-      const s = streak(h.log);
-      if ([7, 30, 100].includes(s)) {
-        toast(`<em>${s}-day</em> on <b>${esc(h.name)}</b>!`);
-      }
-      // dispatch XP event (Hunter system listens)
-      document.dispatchEvent(new CustomEvent('pulse-tick', { detail: { streak: s, habit: h.name } }));
+    const action = e.target.closest('[data-action]')?.dataset.action;
+    if (action === 'detail') {
+      openDetail(id);
+      return;
     }
-    Store.set('habits', habits);
-    renderList();
+    if (action === 'check') {
+      const t = today();
+      const wasDone = h.log.includes(t);
+      if (wasDone) {
+        h.log = h.log.filter(d => d !== t);
+      } else {
+        h.log.push(t);
+        if (navigator.vibrate) navigator.vibrate(12);
+        const r = row.getBoundingClientRect();
+        burst(r.left + 36, r.top + 35, 14);
+        const s = streak(h.log);
+        if ([7, 30, 100].includes(s)) {
+          toast(`<em>${s}-day</em> on <b>${esc(h.name)}</b>!`);
+        }
+        document.dispatchEvent(new CustomEvent('pulse-tick', { detail: { streak: s, habit: h.name } }));
+      }
+      Store.set('habits', habits);
+      renderList();
+    }
   });
-
-  // Long-press to open detail (or double-tap on row)
-  let pressTimer = null;
-  listEl.addEventListener('pointerdown', e => {
-    const row = e.target.closest('.habit'); if (!row) return;
-    pressTimer = setTimeout(() => {
-      openDetail(row.dataset.id);
-      pressTimer = null;
-    }, 500);
-  });
-  listEl.addEventListener('pointerup', () => { if (pressTimer) clearTimeout(pressTimer); });
-  listEl.addEventListener('pointerleave', () => { if (pressTimer) clearTimeout(pressTimer); });
-  listEl.addEventListener('pointercancel', () => { if (pressTimer) clearTimeout(pressTimer); });
-
-  // also tap the streak text to open detail
-  listEl.addEventListener('click', e => {
-    const s = e.target.closest('.h-streak');
-    if (!s) return;
-    const row = e.target.closest('.habit');
-    if (!row) return;
-    e.stopPropagation();
-    openDetail(row.dataset.id);
-  }, true);
 
   /* ===== Add habit ===== */
   const addInput = document.getElementById('add-input');
