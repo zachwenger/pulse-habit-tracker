@@ -222,6 +222,24 @@
     letter-spacing: 1px; font-weight: 600; }
   .qty-pill.partial { background: rgba(255,180,71,0.1); border-color: rgba(255,180,71,0.3); color: #ffd28a; }
 
+  /* ── INLINE PROGRESS BAR (for quantitative habits) ── */
+  .h-progress { width: 100%; height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px;
+    overflow: hidden; margin-top: 8px; position: relative; }
+  .h-progress-fill { height: 100%; border-radius: 2px;
+    background: linear-gradient(90deg, var(--cy-dim), var(--cy), var(--cy-hi));
+    box-shadow: 0 0 8px rgba(var(--cy-rgb),0.5);
+    transition: width .5s cubic-bezier(.4,0,.2,1); }
+  .h-progress.complete .h-progress-fill {
+    background: linear-gradient(90deg, var(--cy-hi), var(--cy-hi));
+    animation: pulseBar 1.5s ease-in-out infinite;
+  }
+  @keyframes pulseBar { 50% { opacity: 0.6; } }
+  .h-qty-row { display: flex; justify-content: space-between; align-items: baseline; margin-top: 6px;
+    font-family: var(--f-mono); font-size: 10px; letter-spacing: 1px; color: var(--fg-3); text-transform: uppercase; }
+  .h-qty-row .now { color: var(--cy-hi); font-weight: 600; font-size: 12px; }
+  .h-qty-row .target { color: var(--fg-4); }
+  .h-qty-row .tap-hint { color: var(--cy); font-size: 9px; letter-spacing: 1px; }
+
   /* empty state */
   .empty {
     padding: 60px 20px; text-align: center;
@@ -608,10 +626,9 @@
       <input class="add-input" id="add-input" placeholder="New habit…" maxlength="60" autocomplete="off">
       <button class="add-btn" id="add-btn">Add</button>
     </div>
-    <button class="add-toggle" id="add-target-toggle">+ add target / unit (optional)</button>
-    <div class="add-target-row hidden" id="add-target-row">
-      <input class="add-input" id="add-target" type="number" min="0" placeholder="target" inputmode="decimal">
-      <input class="add-input" id="add-unit" placeholder="unit (pages, oz, min…)" maxlength="20" autocomplete="off">
+    <div class="add-target-row" id="add-target-row">
+      <select class="add-input" id="add-unit-select" style="color-scheme: dark"></select>
+      <input class="add-input hidden" id="add-target" type="number" min="0" placeholder="target" inputmode="decimal">
     </div>
   </div>
 
@@ -729,11 +746,10 @@
         line. Single-file vanilla PWA, single cyan accent, offline-first, installable on phone.
       </div>
       <div class="intro-list">
-        <div><b>Tap the circle</b> · mark today done</div>
-        <div><b>Tap the name or ›</b> · open the consistency graph</div>
-        <div>In detail: <b>Rename / set target / delete</b></div>
-        <div><b>Optional target + unit</b> when you add a habit · "10 pages" / "64 oz" / "30 min" — tapping the circle prompts for the amount you actually did</div>
-        <div><b>Tap +</b> · add a new habit</div>
+        <div><b>Yes / no habits</b> · tap the circle to mark today done</div>
+        <div><b>Tally habits</b> (water, pages, min…) · pick a unit when you add them. Each tap adds <b>one step</b> (e.g. +8 oz, +5 pages). When the target hits, the day marks done.</div>
+        <div><b>Tap name or ›</b> · open the consistency graph + rename / set target / delete</div>
+        <div><b>Shift-click the circle</b> (desktop) · enter a custom amount</div>
       </div>
       <div class="intro-actions">
         <button class="intro-secondary" id="intro-clear">Reset data</button>
@@ -756,18 +772,45 @@
   const today = () => new Date().toLocaleDateString('en-CA');
   const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
+  // Unit presets: smart target + per-tap increment for common habit types.
+  // ── means simple yes/no (no target). Order matters — first entries are most-used.
+  const UNIT_PRESETS = [
+    { key: '',         label: 'Yes / No',     target: 0,     step: 0 },
+    { key: 'glasses',  label: 'Glasses',      target: 8,     step: 1 },
+    { key: 'oz',       label: 'Ounces (oz)',  target: 64,    step: 8 },
+    { key: 'ml',       label: 'Millilitres',  target: 2000,  step: 250 },
+    { key: 'pages',    label: 'Pages',        target: 20,    step: 5 },
+    { key: 'min',      label: 'Minutes',      target: 30,    step: 5 },
+    { key: 'hrs',      label: 'Hours',        target: 1,     step: 0.5 },
+    { key: 'reps',     label: 'Reps',         target: 100,   step: 10 },
+    { key: 'sets',     label: 'Sets',         target: 5,     step: 1 },
+    { key: 'km',       label: 'Kilometres',   target: 5,     step: 1 },
+    { key: 'mi',       label: 'Miles',        target: 3,     step: 1 },
+    { key: 'steps',    label: 'Steps',        target: 10000, step: 1000 },
+    { key: 'pomos',    label: 'Pomodoros',    target: 4,     step: 1 },
+  ];
+  function unitPreset(key) { return UNIT_PRESETS.find(u => u.key === key) || UNIT_PRESETS[0]; }
+
   let habits = Store.get('habits', null);
   if (habits === null) {
     habits = [
-      { id: uid(), name: 'Train or move', log: [], created: Date.now() },
-      { id: uid(), name: 'Read', log: [], target: 10, unit: 'pages', qty: {}, created: Date.now() },
-      { id: uid(), name: 'Drink water', log: [], target: 64, unit: 'oz', qty: {}, created: Date.now() },
-      { id: uid(), name: 'Sleep by 12', log: [], created: Date.now() },
+      { id: uid(), name: 'Train or move', log: [], target: 0,  unit: '',         step: 0,    qty: {}, created: Date.now() },
+      { id: uid(), name: 'Read',          log: [], target: 20, unit: 'pages',    step: 5,    qty: {}, created: Date.now() },
+      { id: uid(), name: 'Drink water',   log: [], target: 64, unit: 'oz',       step: 8,    qty: {}, created: Date.now() },
+      { id: uid(), name: 'Sleep by 12',   log: [], target: 0,  unit: '',         step: 0,    qty: {}, created: Date.now() },
     ];
     Store.set('habits', habits);
   }
-  // back-fill new shape fields on older saved habits
-  habits.forEach(h => { if (!h.qty) h.qty = {}; if (typeof h.target !== 'number') h.target = 0; if (!h.unit) h.unit = ''; });
+  // back-fill new shape on older saved habits
+  habits.forEach(h => {
+    if (!h.qty) h.qty = {};
+    if (typeof h.target !== 'number') h.target = 0;
+    if (!h.unit) h.unit = '';
+    if (typeof h.step !== 'number') {
+      const p = unitPreset(h.unit);
+      h.step = p.step || 1;
+    }
+  });
 
   /* ===== Streak + consistency helpers ===== */
   function streak(log) {
@@ -866,19 +909,24 @@
         const s = streak(h.log);
         const tQty = h.qty?.[t] || 0;
         const isQuant = h.target > 0;
-        const partial = isQuant && !done && tQty > 0;
+        const pct = isQuant ? Math.min(100, Math.round(tQty / h.target * 100)) : (done ? 100 : 0);
         const streakHtml = s > 0 ? `<b>${s}d</b> streak` : 'no streak';
-        const qtyHtml = isQuant
-          ? `<span class="qty-pill ${partial ? 'partial' : ''}">${tQty} / ${h.target} ${esc(h.unit)}</span>`
-          : '';
+        // Quant habits get an inline progress bar + qty row. Simple habits keep the trail.
+        const quantBlock = isQuant ? `
+            <div class="h-progress ${done ? 'complete' : ''}"><div class="h-progress-fill" style="width:${pct}%"></div></div>
+            <div class="h-qty-row">
+              <span><span class="now">${tQty}</span><span class="target"> / ${h.target} ${esc(h.unit)}</span></span>
+              <span class="tap-hint">${done ? 'TARGET HIT' : `TAP +${h.step} ${esc(h.unit)}`}</span>
+            </div>` : `
+            <div class="h-trail">${trailCells(h.log)}</div>`;
         return `<div class="habit ${done ? 'done' : ''}" data-id="${h.id}">
           <div class="h-check" data-action="check"></div>
           <div class="h-body" data-action="detail">
             <div class="h-top">
               <div class="h-name">${esc(h.name)}</div>
-              <div class="h-streak ${s === 0 ? 'cold' : ''}">${qtyHtml || streakHtml}</div>
+              <div class="h-streak ${s === 0 ? 'cold' : ''}">${streakHtml}</div>
             </div>
-            <div class="h-trail">${trailCells(h.log)}</div>
+            ${quantBlock}
           </div>
           <div class="h-detail-chev" data-action="detail" aria-label="View details">›</div>
         </div>`;
@@ -899,11 +947,47 @@
     else heroEl.innerHTML = `<em>${habits.length - doneToday}</em> left.`;
   }
 
+  /* ===== Long-press on the check circle of a quantitative habit =====
+     opens the custom-amount prompt. Cancels normal click on release. */
+  let lpTimer = null, lpFired = false;
+  listEl.addEventListener('pointerdown', e => {
+    const ck = e.target.closest('.h-check'); if (!ck) return;
+    const row = ck.closest('.habit'); if (!row) return;
+    const h = habits.find(x => x.id === row.dataset.id); if (!h || h.target <= 0) return;
+    lpFired = false;
+    lpTimer = setTimeout(() => {
+      lpFired = true;
+      const t = today();
+      const raw = prompt(`How many ${h.unit}? (current ${h.qty[t] || 0} of ${h.target})`, h.step);
+      if (raw === null) return;
+      const n = parseFloat(raw);
+      if (!isFinite(n) || n <= 0) return;
+      h.qty = h.qty || {};
+      h.qty[t] = (h.qty[t] || 0) + n;
+      if (h.qty[t] >= h.target && !h.log.includes(t)) {
+        h.log.push(t);
+        if (navigator.vibrate) navigator.vibrate(20);
+        const r = row.getBoundingClientRect();
+        burst(r.left + 32, r.top + 32, 18);
+        const s = streak(h.log);
+        if ([7, 30, 100].includes(s)) toast(`<em>${s}-day</em> on <b>${esc(h.name)}</b>!`);
+        else toast(`<b>${esc(h.name)}</b> — target hit.`);
+        document.dispatchEvent(new CustomEvent('pulse-tick', { detail: { streak: s, habit: h.name } }));
+      }
+      Store.set('habits', habits); renderList();
+    }, 500);
+  });
+  const cancelLP = () => { if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; } };
+  listEl.addEventListener('pointerup', cancelLP);
+  listEl.addEventListener('pointerleave', cancelLP);
+  listEl.addEventListener('pointercancel', cancelLP);
+
   /* ===== Habit row interactions =====
      - tap the LEFT check circle      → mark today done/undone
      - tap the BODY (name + trail) or CHEVRON on the right → open detail
        (which has rename + delete + 12-month consistency graph)        */
   listEl.addEventListener('click', e => {
+    if (lpFired) { lpFired = false; return; }
     const row = e.target.closest('.habit'); if (!row) return;
     const id = row.dataset.id;
     const h = habits.find(x => x.id === id); if (!h) return;
@@ -921,25 +1005,30 @@
         h.log = h.log.filter(d => d !== t);
         if (h.qty) delete h.qty[t];
       } else if (isQuant) {
-        // quantitative habit — prompt for amount, default = remaining/target
-        const remaining = Math.max(0, h.target - (h.qty?.[t] || 0));
-        const raw = prompt(`How many ${h.unit}? (target ${h.target}${remaining < h.target ? `, ${remaining} left` : ''})`, remaining || h.target);
-        if (raw === null) return;
-        const n = parseFloat(raw);
-        if (!isFinite(n) || n <= 0) return;
+        // tap-to-tally: silently adds one step toward the target.
+        // Shift-click (desktop) or long-press (mobile) opens custom-amount prompt.
         h.qty = h.qty || {};
-        h.qty[t] = (h.qty[t] || 0) + n;
-        if (h.qty[t] >= h.target) {
+        let add = h.step || 1;
+        if (e.shiftKey) {
+          const raw = prompt(`How many ${h.unit}? (current ${h.qty[t] || 0} of ${h.target})`, h.step);
+          if (raw === null) return;
+          const n = parseFloat(raw);
+          if (!isFinite(n) || n <= 0) return;
+          add = n;
+        }
+        h.qty[t] = (h.qty[t] || 0) + add;
+        if (h.qty[t] >= h.target && !h.log.includes(t)) {
           h.log.push(t);
-          if (navigator.vibrate) navigator.vibrate(12);
+          if (navigator.vibrate) navigator.vibrate(20);
           const r = row.getBoundingClientRect();
-          burst(r.left + 32, r.top + 32, 14);
+          burst(r.left + 32, r.top + 32, 18);
           const s = streak(h.log);
           if ([7, 30, 100].includes(s)) toast(`<em>${s}-day</em> on <b>${esc(h.name)}</b>!`);
+          else toast(`<b>${esc(h.name)}</b> — target hit.`);
           document.dispatchEvent(new CustomEvent('pulse-tick', { detail: { streak: s, habit: h.name } }));
         } else {
-          if (navigator.vibrate) navigator.vibrate(8);
-          toast(`<b>${h.qty[t]}/${h.target}</b> ${esc(h.unit)} — ${h.target - h.qty[t]} to go.`);
+          if (navigator.vibrate) navigator.vibrate(6);
+          // subtle inline-only feedback (no toast spam on every tap)
         }
       } else {
         // simple yes/no habit
@@ -956,29 +1045,41 @@
     }
   });
 
-  /* ===== Add habit ===== */
+  /* ===== Add habit (with unit dropdown + smart target prefill) ===== */
   const addInput = document.getElementById('add-input');
-  const addTargetRow = document.getElementById('add-target-row');
-  const addTargetToggle = document.getElementById('add-target-toggle');
+  const addUnitSelect = document.getElementById('add-unit-select');
   const addTarget = document.getElementById('add-target');
-  const addUnit = document.getElementById('add-unit');
-  addTargetToggle.addEventListener('click', () => {
-    addTargetRow.classList.toggle('hidden');
-    addTargetToggle.textContent = addTargetRow.classList.contains('hidden')
-      ? '+ add target / unit (optional)'
-      : '− hide target / unit';
-    if (!addTargetRow.classList.contains('hidden')) addTarget.focus();
-  });
+  // populate the unit dropdown
+  addUnitSelect.innerHTML = UNIT_PRESETS.map(u => `<option value="${u.key}">${u.label}</option>`).join('');
+  function syncAddTargetVisibility() {
+    const p = unitPreset(addUnitSelect.value);
+    if (p.target > 0) {
+      addTarget.classList.remove('hidden');
+      addTarget.placeholder = `target (${p.target} default)`;
+      if (!addTarget.value) addTarget.value = p.target;
+    } else {
+      addTarget.classList.add('hidden');
+      addTarget.value = '';
+    }
+  }
+  addUnitSelect.addEventListener('change', syncAddTargetVisibility);
+  syncAddTargetVisibility();
+
   function addHabit() {
     const v = addInput.value.trim(); if (!v) return;
-    const target = parseFloat(addTarget.value) || 0;
-    const unit = addUnit.value.trim();
-    const h = { id: uid(), name: v, log: [], created: Date.now(), target, unit, qty: {} };
+    const unitKey = addUnitSelect.value;
+    const preset = unitPreset(unitKey);
+    const target = preset.target > 0 ? (parseFloat(addTarget.value) || preset.target) : 0;
+    const step = preset.step || (target > 0 ? Math.max(1, Math.round(target / 8)) : 0);
+    const h = {
+      id: uid(), name: v, log: [], created: Date.now(),
+      target, unit: unitKey, step, qty: {},
+    };
     habits.push(h);
     Store.set('habits', habits);
-    addInput.value = ''; addTarget.value = ''; addUnit.value = '';
-    addTargetRow.classList.add('hidden');
-    addTargetToggle.textContent = '+ add target / unit (optional)';
+    addInput.value = '';
+    addUnitSelect.value = '';
+    syncAddTargetVisibility();
     renderList();
   }
   document.getElementById('add-btn').addEventListener('click', addHabit);
