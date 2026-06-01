@@ -13,7 +13,7 @@
 <title>PULSE</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
   html, body { overscroll-behavior-y: contain; }
@@ -38,7 +38,8 @@
     --cy-glow-soft: 0 0 8px rgba(var(--cy-rgb),0.3);
     --danger: #ff4477;
     --f-mono: 'JetBrains Mono', ui-monospace, monospace;
-    --f-display: 'Instrument Serif', 'Times New Roman', serif;
+    --f-display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+    --f-body: 'Inter', system-ui, sans-serif;
   }
   body[data-theme="mono"] {
     --cy: #ffffff; --cy-hi: #ffffff; --cy-dim: #6e6e6e;
@@ -58,11 +59,12 @@
   }
   body {
     background: var(--bg); color: var(--fg);
-    font-family: 'Inter', sans-serif; font-weight: 400;
+    font-family: var(--f-body); font-weight: 400;
     min-height: 100vh; position: relative; overflow-x: hidden;
     padding-top: env(safe-area-inset-top, 0);
     padding-bottom: env(safe-area-inset-bottom, 0);
-    font-size: 16px; line-height: 1.5;
+    font-size: 15px; line-height: 1.5;
+    -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
   }
   /* ambient aurora */
   body::before {
@@ -92,14 +94,14 @@
   .hud > .bl { bottom: 12px; left: 12px; border-bottom-width: 1px; border-left-width: 1px; }
   .hud > .br { bottom: 12px; right: 12px; border-bottom-width: 1px; border-right-width: 1px; }
 
-  .wrap { max-width: 520px; margin: 0 auto; padding: 28px 20px 80px; position: relative; z-index: 3; }
+  .wrap { max-width: 520px; margin: 0 auto; padding: 22px 18px 80px; position: relative; z-index: 3; }
 
   /* header */
   .head {
-    display: flex; align-items: center; justify-content: space-between; margin-bottom: 26px;
-    font-family: var(--f-mono); font-size: 11px; letter-spacing: 4px; text-transform: uppercase;
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;
+    font-family: var(--f-mono); font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
   }
-  .logo { display: flex; align-items: center; gap: 10px; font-weight: 500; color: var(--fg); letter-spacing: 8px; font-size: 13px; }
+  .logo { display: flex; align-items: center; gap: 10px; font-weight: 600; color: var(--fg); letter-spacing: 6px; font-size: 13px; }
   .logo-dot { width: 6px; height: 6px; background: var(--cy); border-radius: 50%; box-shadow: var(--cy-glow); animation: pulse 2s ease-in-out infinite; }
   @keyframes pulse { 50% { opacity: 0.5; } }
   .head-right { color: var(--fg-3); letter-spacing: 3px; }
@@ -107,25 +109,25 @@
 
   /* hero summary */
   .hero {
-    margin-bottom: 32px; padding-bottom: 22px; border-bottom: 1px solid var(--line);
+    margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--line);
   }
-  .hero-title { font-family: var(--f-display); font-size: clamp(40px, 11vw, 60px);
-    line-height: 0.95; letter-spacing: -2px; color: var(--fg); }
-  .hero-title em { color: var(--cy); font-style: italic;
-    text-shadow: 0 0 24px rgba(var(--cy-rgb),0.4); }
-  .hero-meta { display: flex; gap: 22px; margin-top: 14px;
-    font-family: var(--f-mono); font-size: 10px; letter-spacing: 3px; color: var(--fg-4); text-transform: uppercase; }
-  .hero-meta span b { color: var(--cy-hi); font-weight: 500; }
+  .hero-title { font-family: var(--f-display); font-size: clamp(38px, 10vw, 52px); font-weight: 700;
+    line-height: 1; letter-spacing: -1.5px; color: var(--fg); }
+  .hero-title em { color: var(--cy); font-style: normal; font-weight: 700;
+    text-shadow: 0 0 18px rgba(var(--cy-rgb),0.45); }
+  .hero-meta { display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap;
+    font-family: var(--f-mono); font-size: 10px; letter-spacing: 2px; color: var(--fg-4); text-transform: uppercase; }
+  .hero-meta span b { color: var(--cy-hi); font-weight: 600; }
 
   /* habit list */
-  .habits { display: flex; flex-direction: column; gap: 14px; }
+  .habits { display: flex; flex-direction: column; gap: 10px; }
   .habit {
     position: relative;
-    padding: 18px 14px 18px 18px;
+    padding: 14px 14px 14px 16px;
     background: linear-gradient(180deg, rgba(13,18,40,0.7), rgba(8,12,28,0.7));
     border: 1px solid var(--line);
     border-radius: 16px;
-    display: grid; grid-template-columns: 36px 1fr 28px; gap: 14px; align-items: center;
+    display: grid; grid-template-columns: 32px 1fr 28px; gap: 12px; align-items: center;
     transition: border-color .25s ease, transform .15s ease, box-shadow .25s ease;
     -webkit-user-select: none; user-select: none;
   }
@@ -146,7 +148,7 @@
   .habit.done { border-color: rgba(var(--cy-rgb),0.35);
     box-shadow: 0 0 24px -8px rgba(var(--cy-rgb),0.4), 0 0 0 1px rgba(var(--cy-rgb),0.1) inset; }
 
-  .h-check { width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--fg-4);
+  .h-check { width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid var(--fg-4);
     position: relative; flex-shrink: 0;
     transition: all .3s cubic-bezier(.34,1.56,.64,1);
     background: radial-gradient(circle, transparent 60%, rgba(var(--cy-rgb),0.05));
@@ -157,7 +159,7 @@
     box-shadow: 0 0 18px rgba(var(--cy-rgb),0.6), inset 0 0 8px rgba(255,255,255,0.3);
   }
   .habit.done .h-check::after {
-    content: ''; position: absolute; left: 12px; top: 8px; width: 6px; height: 14px;
+    content: ''; position: absolute; left: 10px; top: 6px; width: 6px; height: 13px;
     border: solid #020510; border-width: 0 2.5px 2.5px 0; transform: rotate(45deg);
   }
   .h-check.pop { animation: pop .4s cubic-bezier(.34,1.56,.64,1); }
@@ -165,7 +167,7 @@
 
   .h-body { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
   .h-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
-  .h-name { font-family: var(--f-display); font-size: 22px; font-weight: 400; color: var(--fg);
+  .h-name { font-family: var(--f-display); font-size: 18px; font-weight: 600; color: var(--fg);
     letter-spacing: -.3px; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .habit.done .h-name { color: var(--fg-2); }
   .h-streak {
@@ -191,23 +193,34 @@
   .h-cell.today { outline: 1px solid rgba(var(--cy-rgb),0.6); outline-offset: 1px; border-radius: 2px; }
 
   /* add row */
-  .add-row { display: flex; gap: 8px; margin-top: 18px; }
+  .add-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-top: 14px; }
+  .add-target-row { display: grid; grid-template-columns: 80px 1fr; gap: 8px; margin-top: 6px; }
+  .add-target-row.hidden { display: none; }
   .add-input {
-    flex: 1; padding: 14px 16px; border-radius: 12px;
+    padding: 12px 14px; border-radius: 10px;
     background: rgba(255,255,255,0.025); border: 1px solid var(--line);
-    color: var(--fg); font-family: inherit; font-size: 16px; outline: none;
-    transition: border-color .2s ease;
+    color: var(--fg); font-family: inherit; font-size: 15px; outline: none;
+    transition: border-color .2s ease; font-weight: 500;
   }
-  .add-input::placeholder { color: var(--fg-4); }
+  .add-input::placeholder { color: var(--fg-4); font-weight: 400; }
   .add-input:focus { border-color: var(--cy); }
   .add-btn {
-    padding: 0 22px; border-radius: 12px; border: none; cursor: pointer;
+    padding: 0 18px; border-radius: 10px; border: none; cursor: pointer;
     background: linear-gradient(135deg, var(--cy-hi), var(--cy)); color: #020510;
     font-family: var(--f-mono); font-size: 11px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase;
     box-shadow: 0 8px 20px -4px rgba(var(--cy-rgb),0.5), inset 0 1px 0 rgba(255,255,255,0.3);
     transition: transform .15s ease;
   }
   .add-btn:active { transform: scale(0.96); }
+  .add-toggle { background: none; border: none; color: var(--cy); cursor: pointer;
+    font-family: var(--f-mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    padding: 8px 4px 0; transition: color .2s; text-align: left; }
+  .add-toggle:hover { color: var(--cy-hi); }
+  .qty-pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px;
+    background: rgba(var(--cy-rgb),0.1); border: 1px solid rgba(var(--cy-rgb),0.3);
+    border-radius: 999px; font-family: var(--f-mono); font-size: 10px; color: var(--cy-hi);
+    letter-spacing: 1px; font-weight: 600; }
+  .qty-pill.partial { background: rgba(255,180,71,0.1); border-color: rgba(255,180,71,0.3); color: #ffd28a; }
 
   /* empty state */
   .empty {
@@ -217,7 +230,7 @@
   .empty svg { width: 56px; height: 56px; stroke: var(--cy); fill: none;
     stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; opacity: 0.6;
     margin-bottom: 14px; }
-  .empty-title { font-family: var(--f-display); font-size: 24px; color: var(--fg-2); margin-bottom: 6px; }
+  .empty-title { font-family: var(--f-display); font-weight: 600; font-size: 22px; color: var(--fg-2); margin-bottom: 6px; }
   .empty-sub { font-size: 13px; color: var(--fg-4); line-height: 1.6; max-width: 280px; margin: 0 auto; }
 
   /* detail modal */
@@ -248,8 +261,10 @@
   .detail-act button:hover { color: var(--cy-hi); border-color: var(--cy-dim); }
   .detail-act .del:hover { color: var(--danger); border-color: var(--danger); }
 
-  .detail-title { font-family: var(--f-display); font-size: 48px;
-    color: var(--fg); letter-spacing: -1.5px; line-height: 1; margin-bottom: 24px; }
+  .detail-title { font-family: var(--f-display); font-weight: 700; font-size: 40px;
+    color: var(--fg); letter-spacing: -1.5px; line-height: 1; margin-bottom: 20px; }
+  .detail-target { font-family: var(--f-mono); font-size: 11px; letter-spacing: 2px;
+    color: var(--cy); text-transform: uppercase; margin: -14px 0 22px; }
 
   .stats {
     display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 32px;
@@ -340,7 +355,7 @@
   .toast-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--cy);
     box-shadow: var(--cy-glow); flex-shrink: 0; }
   .toast b { color: var(--cy-hi); }
-  .toast em { color: var(--cy-hi); font-family: var(--f-display); font-style: italic; }
+  .toast em { color: var(--cy-hi); font-family: var(--f-display); font-style: normal; font-weight: 600; }
 
   /* burst particles */
   .burst { position: fixed; pointer-events: none; z-index: 90; width: 8px; height: 8px;
@@ -373,9 +388,9 @@
     color: var(--cy); text-transform: uppercase; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
   .intro-tag::before { content:''; width: 5px; height: 5px; background: var(--cy);
     border-radius: 50%; box-shadow: var(--cy-glow); }
-  .intro-title { font-family: var(--f-display); font-size: 38px; line-height: 1; letter-spacing: -1.5px;
+  .intro-title { font-family: var(--f-display); font-weight: 700; font-size: 36px; line-height: 1; letter-spacing: -1.5px;
     color: var(--fg); margin-bottom: 14px; }
-  .intro-title em { color: var(--cy); font-style: italic;
+  .intro-title em { color: var(--cy); font-style: normal; font-weight: 700;
     text-shadow: 0 0 18px rgba(var(--cy-rgb),0.4); }
   .intro-body { font-size: 14px; color: var(--fg-2); line-height: 1.7; margin-bottom: 22px; }
   .intro-body b { color: var(--cy-hi); font-weight: 500; }
@@ -442,15 +457,15 @@
   }
   .status-rank-badge.s { font-size: 26px; }
   .status-head-text { display: flex; flex-direction: column; gap: 2px; }
-  .status-lv { font-family: var(--f-display); font-size: 32px; color: var(--fg); line-height: 1;
+  .status-lv { font-family: var(--f-display); font-weight: 700; font-size: 30px; color: var(--fg); line-height: 1;
     letter-spacing: -1px; }
-  .status-lv em { color: var(--cy-hi); font-style: italic;
+  .status-lv em { color: var(--cy-hi); font-style: normal; font-weight: 700;
     text-shadow: 0 0 14px rgba(var(--cy-rgb),0.4); }
   .status-rank-name { font-family: var(--f-mono); font-size: 10px; letter-spacing: 3px;
     color: var(--cy); text-transform: uppercase; }
-  .status-codename { font-family: var(--f-display); font-style: italic; font-size: 14px;
-    color: var(--fg-2); margin-top: 4px; }
-  .status-codename em { color: var(--cy-hi); }
+  .status-codename { font-family: var(--f-display); font-style: normal; font-weight: 500; font-size: 14px;
+    color: var(--fg-2); margin-top: 4px; letter-spacing: -.2px; }
+  .status-codename em { color: var(--cy-hi); font-style: normal; font-weight: 600; }
   .status-xpbar { height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden;
     margin-bottom: 8px; position: relative; }
   .status-xpfill { height: 100%; background: linear-gradient(90deg, var(--cy-dim), var(--cy), var(--cy-hi));
@@ -506,10 +521,10 @@
     box-shadow: 0 0 8px var(--cy-hi); animation: pulse 1.5s ease-in-out infinite; border-radius: 50%; }
   .sys-tag-text { font-family: var(--f-mono); font-size: 10px; letter-spacing: 4px;
     color: var(--cy-hi); text-transform: uppercase; }
-  .sys-head { font-family: var(--f-display); font-size: 34px; color: #fff; text-align: center;
+  .sys-head { font-family: var(--f-display); font-weight: 700; font-size: 32px; color: #fff; text-align: center;
     letter-spacing: -.8px; line-height: 1.1; margin-bottom: 12px;
     text-shadow: 0 0 20px rgba(var(--cy-hi-rgb), 0.6); }
-  .sys-head em { color: var(--cy-hi); font-style: italic; }
+  .sys-head em { color: var(--cy-hi); font-style: normal; font-weight: 700; }
   .sys-body { font-family: var(--f-mono); font-size: 11px; color: var(--fg-2); line-height: 1.7;
     text-align: center; margin-bottom: 18px; }
   .sys-body b { color: var(--cy-hi); }
@@ -593,6 +608,11 @@
       <input class="add-input" id="add-input" placeholder="New habit…" maxlength="60" autocomplete="off">
       <button class="add-btn" id="add-btn">Add</button>
     </div>
+    <button class="add-toggle" id="add-target-toggle">+ add target / unit (optional)</button>
+    <div class="add-target-row hidden" id="add-target-row">
+      <input class="add-input" id="add-target" type="number" min="0" placeholder="target" inputmode="decimal">
+      <input class="add-input" id="add-unit" placeholder="unit (pages, oz, min…)" maxlength="20" autocomplete="off">
+    </div>
   </div>
 
   <!-- Detail / chart overlay -->
@@ -609,6 +629,7 @@
         </div>
       </div>
       <div class="detail-title" id="detail-title">Habit</div>
+      <div class="detail-target" id="detail-target" style="display:none">— · target</div>
 
       <div class="stats">
         <div class="stat"><div class="stat-label">Current</div><div class="stat-val" id="s-current">0</div></div>
@@ -710,9 +731,9 @@
       <div class="intro-list">
         <div><b>Tap the circle</b> · mark today done</div>
         <div><b>Tap the name or ›</b> · open the consistency graph</div>
-        <div>In detail view: <b>Rename · Delete</b></div>
+        <div>In detail: <b>Rename / set target / delete</b></div>
+        <div><b>Optional target + unit</b> when you add a habit · "10 pages" / "64 oz" / "30 min" — tapping the circle prompts for the amount you actually did</div>
         <div><b>Tap +</b> · add a new habit</div>
-        <div><b>?</b> top-left · open this guide anytime</div>
       </div>
       <div class="intro-actions">
         <button class="intro-secondary" id="intro-clear">Reset data</button>
@@ -739,11 +760,14 @@
   if (habits === null) {
     habits = [
       { id: uid(), name: 'Train or move', log: [], created: Date.now() },
-      { id: uid(), name: 'Read 10 pages', log: [], created: Date.now() },
+      { id: uid(), name: 'Read', log: [], target: 10, unit: 'pages', qty: {}, created: Date.now() },
+      { id: uid(), name: 'Drink water', log: [], target: 64, unit: 'oz', qty: {}, created: Date.now() },
       { id: uid(), name: 'Sleep by 12', log: [], created: Date.now() },
     ];
     Store.set('habits', habits);
   }
+  // back-fill new shape fields on older saved habits
+  habits.forEach(h => { if (!h.qty) h.qty = {}; if (typeof h.target !== 'number') h.target = 0; if (!h.unit) h.unit = ''; });
 
   /* ===== Streak + consistency helpers ===== */
   function streak(log) {
@@ -840,12 +864,19 @@
       listEl.innerHTML = habits.map(h => {
         const done = h.log.includes(t);
         const s = streak(h.log);
+        const tQty = h.qty?.[t] || 0;
+        const isQuant = h.target > 0;
+        const partial = isQuant && !done && tQty > 0;
+        const streakHtml = s > 0 ? `<b>${s}d</b> streak` : 'no streak';
+        const qtyHtml = isQuant
+          ? `<span class="qty-pill ${partial ? 'partial' : ''}">${tQty} / ${h.target} ${esc(h.unit)}</span>`
+          : '';
         return `<div class="habit ${done ? 'done' : ''}" data-id="${h.id}">
           <div class="h-check" data-action="check"></div>
           <div class="h-body" data-action="detail">
             <div class="h-top">
               <div class="h-name">${esc(h.name)}</div>
-              <div class="h-streak ${s === 0 ? 'cold' : ''}">${s > 0 ? `<b>${s}d</b> streak` : 'no streak'}</div>
+              <div class="h-streak ${s === 0 ? 'cold' : ''}">${qtyHtml || streakHtml}</div>
             </div>
             <div class="h-trail">${trailCells(h.log)}</div>
           </div>
@@ -884,17 +915,40 @@
     if (action === 'check') {
       const t = today();
       const wasDone = h.log.includes(t);
+      const isQuant = h.target > 0;
       if (wasDone) {
+        // un-check: clear today's log + qty
         h.log = h.log.filter(d => d !== t);
+        if (h.qty) delete h.qty[t];
+      } else if (isQuant) {
+        // quantitative habit — prompt for amount, default = remaining/target
+        const remaining = Math.max(0, h.target - (h.qty?.[t] || 0));
+        const raw = prompt(`How many ${h.unit}? (target ${h.target}${remaining < h.target ? `, ${remaining} left` : ''})`, remaining || h.target);
+        if (raw === null) return;
+        const n = parseFloat(raw);
+        if (!isFinite(n) || n <= 0) return;
+        h.qty = h.qty || {};
+        h.qty[t] = (h.qty[t] || 0) + n;
+        if (h.qty[t] >= h.target) {
+          h.log.push(t);
+          if (navigator.vibrate) navigator.vibrate(12);
+          const r = row.getBoundingClientRect();
+          burst(r.left + 32, r.top + 32, 14);
+          const s = streak(h.log);
+          if ([7, 30, 100].includes(s)) toast(`<em>${s}-day</em> on <b>${esc(h.name)}</b>!`);
+          document.dispatchEvent(new CustomEvent('pulse-tick', { detail: { streak: s, habit: h.name } }));
+        } else {
+          if (navigator.vibrate) navigator.vibrate(8);
+          toast(`<b>${h.qty[t]}/${h.target}</b> ${esc(h.unit)} — ${h.target - h.qty[t]} to go.`);
+        }
       } else {
+        // simple yes/no habit
         h.log.push(t);
         if (navigator.vibrate) navigator.vibrate(12);
         const r = row.getBoundingClientRect();
-        burst(r.left + 36, r.top + 35, 14);
+        burst(r.left + 32, r.top + 32, 14);
         const s = streak(h.log);
-        if ([7, 30, 100].includes(s)) {
-          toast(`<em>${s}-day</em> on <b>${esc(h.name)}</b>!`);
-        }
+        if ([7, 30, 100].includes(s)) toast(`<em>${s}-day</em> on <b>${esc(h.name)}</b>!`);
         document.dispatchEvent(new CustomEvent('pulse-tick', { detail: { streak: s, habit: h.name } }));
       }
       Store.set('habits', habits);
@@ -904,11 +958,27 @@
 
   /* ===== Add habit ===== */
   const addInput = document.getElementById('add-input');
+  const addTargetRow = document.getElementById('add-target-row');
+  const addTargetToggle = document.getElementById('add-target-toggle');
+  const addTarget = document.getElementById('add-target');
+  const addUnit = document.getElementById('add-unit');
+  addTargetToggle.addEventListener('click', () => {
+    addTargetRow.classList.toggle('hidden');
+    addTargetToggle.textContent = addTargetRow.classList.contains('hidden')
+      ? '+ add target / unit (optional)'
+      : '− hide target / unit';
+    if (!addTargetRow.classList.contains('hidden')) addTarget.focus();
+  });
   function addHabit() {
     const v = addInput.value.trim(); if (!v) return;
-    habits.push({ id: uid(), name: v, log: [], created: Date.now() });
+    const target = parseFloat(addTarget.value) || 0;
+    const unit = addUnit.value.trim();
+    const h = { id: uid(), name: v, log: [], created: Date.now(), target, unit, qty: {} };
+    habits.push(h);
     Store.set('habits', habits);
-    addInput.value = '';
+    addInput.value = ''; addTarget.value = ''; addUnit.value = '';
+    addTargetRow.classList.add('hidden');
+    addTargetToggle.textContent = '+ add target / unit (optional)';
     renderList();
   }
   document.getElementById('add-btn').addEventListener('click', addHabit);
@@ -925,6 +995,13 @@
     detailId = id;
     const h = habits.find(x => x.id === id); if (!h) return;
     document.getElementById('detail-title').textContent = h.name;
+    const tgtEl = document.getElementById('detail-target');
+    if (h.target > 0 && h.unit) {
+      tgtEl.style.display = 'block';
+      tgtEl.textContent = `TARGET ${h.target} ${h.unit} / DAY`;
+    } else {
+      tgtEl.style.display = 'none';
+    }
     const sinceDays = Math.max(1, Math.round((Date.now() - h.created) / 86400000));
     document.getElementById('detail-since').textContent = `tracked ${sinceDays}d`;
     document.getElementById('s-current').textContent = streak(h.log);
@@ -946,9 +1023,23 @@
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && detail.classList.contains('open')) closeDetail(); });
   document.getElementById('detail-edit').addEventListener('click', () => {
     const h = habits.find(x => x.id === detailId); if (!h) return;
-    const v = prompt('Rename habit', h.name);
-    if (v && v.trim()) { h.name = v.trim(); Store.set('habits', habits); renderList();
-      document.getElementById('detail-title').textContent = h.name; }
+    const v = prompt('Habit name', h.name);
+    if (v === null) return;
+    if (v.trim()) h.name = v.trim();
+    const t = prompt(`Target per day (number, or leave blank to remove)`, h.target || '');
+    if (t !== null) {
+      const n = parseFloat(t);
+      h.target = isFinite(n) && n > 0 ? n : 0;
+      if (h.target > 0) {
+        const u = prompt('Unit (e.g. pages, oz, min)', h.unit || '');
+        if (u !== null) h.unit = u.trim();
+      } else { h.unit = ''; }
+    }
+    Store.set('habits', habits); renderList();
+    document.getElementById('detail-title').textContent = h.name;
+    const tgtEl = document.getElementById('detail-target');
+    if (h.target > 0 && h.unit) { tgtEl.style.display = 'block'; tgtEl.textContent = `TARGET ${h.target} ${h.unit} / DAY`; }
+    else { tgtEl.style.display = 'none'; }
   });
   document.getElementById('detail-del').addEventListener('click', () => {
     const h = habits.find(x => x.id === detailId); if (!h) return;

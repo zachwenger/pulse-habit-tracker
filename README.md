@@ -5,7 +5,7 @@
 **Niche habit tracker with a per-habit consistency graph.**
 Single-file PWA · cyan-on-black LED Jarvis aesthetic · offline-first · installable.
 
-[**Live demo →**](https://zachwenger.github.io/pulse/) &nbsp; · &nbsp; [Source](https://github.com/zachwenger/pulse) &nbsp; · &nbsp; [Roadmap](#roadmap)
+[**Live demo →**](https://zachwenger.github.io/pulse-habit-tracker/) &nbsp; · &nbsp; [Source](https://github.com/zachwenger/pulse-habit-tracker) &nbsp; · &nbsp; [Roadmap](#roadmap)
 
 </div>
 
@@ -21,17 +21,19 @@ Built as a single `index.html` PWA in a weekend. No build step, no framework, no
 
 ## Features
 
-- **One-tap daily check-in.** 36px tap circle, haptic feedback, cyan particle burst on streak milestones (7d / 30d / 100d).
+- **One-tap daily check-in.** 32px tap circle, haptic feedback, accent particle burst on streak milestones (7d / 30d / 100d).
+- **Quantitative habits** — optionally set a target + unit ("10 pages", "64 oz", "30 min") when adding a habit. Tapping the circle prompts for what you actually did and tracks progress toward the target. Partial-day progress shows as an amber pill; hitting target marks the day done.
 - **21-day inline trail** on every habit row — a smoothed 3-day intensity window so you can read the rhythm without opening anything.
-- **Per-habit detail view** (long-press a row): 12-month GitHub-style heatmap + 30-day rolling-7-day completion area chart + 4 stats (current streak / best streak / total days / 30-day %).
+- **Per-habit detail view** (tap the row name or the › chevron): 12-month GitHub-style heatmap + 30-day rolling-7-day completion area chart + best-days weekday bars + 4 stats (current streak / best streak / total days / 30-day %). Rename / set target / delete all live here.
+- **3 themes**: cyan (default LED), pink (neon), mono (pure white LED) — tap a colored dot in the header.
+- **Hunter system** (Solo Leveling layer) — silent XP per habit + per streak milestone, level + E→S rank, status overlay with codename + XP bar, level-up popup.
 - **Adaptive headline** — `Run the list.` → `2 left.` → `Locked in.` based on today's progress.
 - **Single-file offline PWA.** Install to home screen, works on a plane.
 - **Local-only data.** Nothing leaves your device. No accounts.
-- **Adds to home screen.** Standalone display, splash-screen, app icon.
 
 ## See it live
 
-> Hit the [**live demo**](https://zachwenger.github.io/pulse/) on your phone. Add to home screen. Done.
+> Hit the [**live demo**](https://zachwenger.github.io/pulse-habit-tracker/) on your phone. Add to home screen. Done.
 
 Three seed habits drop in on first run so the consistency trails aren't empty. Tap a row to mark today done, long-press for the per-habit graph. Reset anytime from the `?` menu.
 
@@ -59,7 +61,7 @@ The whole point was to demonstrate that you don't need React + Tailwind + Vite +
 ## Run locally
 
 ```bash
-git clone https://github.com/zachwenger/pulse.git
+git clone https://github.com/zachwenger/pulse-habit-tracker.git
 cd pulse
 python -m http.server 5052
 ```
@@ -68,7 +70,7 @@ Open `http://localhost:5052`.
 
 ## Install on phone
 
-1. Open the [live URL](https://zachwenger.github.io/pulse/) on your phone (Safari iOS or Chrome Android)
+1. Open the [live URL](https://zachwenger.github.io/pulse-habit-tracker/) on your phone (Safari iOS or Chrome Android)
 2. Share menu → **Add to Home Screen**
 3. Opens fullscreen, works offline, syncs nothing
 
