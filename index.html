@@ -194,8 +194,48 @@
 
   /* add row */
   .add-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-top: 14px; }
-  .add-target-row { display: grid; grid-template-columns: 80px 1fr; gap: 8px; margin-top: 6px; }
+  .add-target-row { display: grid; grid-template-columns: 1fr 100px; gap: 8px; margin-top: 8px; }
   .add-target-row.hidden { display: none; }
+
+  /* ── CUSTOM UNIT DROPDOWN ── */
+  .unit-picker { position: relative; }
+  .unit-trigger {
+    width: 100%; padding: 12px 14px; border-radius: 10px;
+    background: rgba(255,255,255,0.025); border: 1px solid var(--line);
+    color: var(--fg); font-family: inherit; font-size: 15px; outline: none;
+    text-align: left; cursor: pointer; font-weight: 500;
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    transition: border-color .2s;
+  }
+  .unit-trigger:hover, .unit-trigger.open { border-color: var(--cy-dim); }
+  .unit-trigger.open { border-color: var(--cy); }
+  .unit-trigger .caret { color: var(--cy); font-family: var(--f-mono); font-size: 11px;
+    transition: transform .2s; }
+  .unit-trigger.open .caret { transform: rotate(180deg); color: var(--cy-hi); }
+
+  .unit-panel {
+    position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 30;
+    background: var(--surface); border: 1px solid rgba(var(--cy-rgb), 0.3); border-radius: 12px;
+    overflow: hidden; display: none;
+    box-shadow: 0 20px 50px -10px rgba(0,0,0,0.7), 0 0 24px -8px rgba(var(--cy-rgb), 0.3);
+    max-height: 320px; overflow-y: auto;
+  }
+  .unit-panel.open { display: block; animation: dropIn .2s cubic-bezier(.4,0,.2,1); }
+  @keyframes dropIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+
+  .unit-opt {
+    padding: 11px 14px; cursor: pointer; display: flex; justify-content: space-between;
+    align-items: center; gap: 12px; transition: background .15s;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .unit-opt:last-child { border-bottom: none; }
+  .unit-opt:hover, .unit-opt.focus { background: rgba(var(--cy-rgb), 0.08); }
+  .unit-opt.selected { background: rgba(var(--cy-rgb), 0.14); }
+  .unit-opt-name { font-size: 14px; font-weight: 500; color: var(--fg); }
+  .unit-opt.selected .unit-opt-name { color: var(--cy-hi); }
+  .unit-opt-meta { font-family: var(--f-mono); font-size: 10px; color: var(--fg-4); letter-spacing: 1px;
+    text-transform: uppercase; white-space: nowrap; }
+  .unit-opt.selected .unit-opt-meta { color: var(--cy); }
   .add-input {
     padding: 12px 14px; border-radius: 10px;
     background: rgba(255,255,255,0.025); border: 1px solid var(--line);
@@ -627,7 +667,13 @@
       <button class="add-btn" id="add-btn">Add</button>
     </div>
     <div class="add-target-row" id="add-target-row">
-      <select class="add-input" id="add-unit-select" style="color-scheme: dark"></select>
+      <div class="unit-picker" id="unit-picker">
+        <button class="unit-trigger" id="unit-trigger" type="button">
+          <span id="unit-trigger-label">Just check ·  yes / no</span>
+          <span class="caret">▾</span>
+        </button>
+        <div class="unit-panel" id="unit-panel"></div>
+      </div>
       <input class="add-input hidden" id="add-target" type="number" min="0" placeholder="target" inputmode="decimal">
     </div>
   </div>
@@ -772,22 +818,20 @@
   const today = () => new Date().toLocaleDateString('en-CA');
   const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-  // Unit presets: smart target + per-tap increment for common habit types.
-  // ── means simple yes/no (no target). Order matters — first entries are most-used.
+  // Unit presets — referenced against Habitify, Productive, Streaks, Strides.
+  // Categories: yes/no · count · time · volume · distance. Generic across most habits.
   const UNIT_PRESETS = [
-    { key: '',         label: 'Yes / No',     target: 0,     step: 0 },
-    { key: 'glasses',  label: 'Glasses',      target: 8,     step: 1 },
-    { key: 'oz',       label: 'Ounces (oz)',  target: 64,    step: 8 },
-    { key: 'ml',       label: 'Millilitres',  target: 2000,  step: 250 },
-    { key: 'pages',    label: 'Pages',        target: 20,    step: 5 },
-    { key: 'min',      label: 'Minutes',      target: 30,    step: 5 },
-    { key: 'hrs',      label: 'Hours',        target: 1,     step: 0.5 },
-    { key: 'reps',     label: 'Reps',         target: 100,   step: 10 },
-    { key: 'sets',     label: 'Sets',         target: 5,     step: 1 },
-    { key: 'km',       label: 'Kilometres',   target: 5,     step: 1 },
-    { key: 'mi',       label: 'Miles',        target: 3,     step: 1 },
-    { key: 'steps',    label: 'Steps',        target: 10000, step: 1000 },
-    { key: 'pomos',    label: 'Pomodoros',    target: 4,     step: 1 },
+    { key: '',        label: 'Just check ·  yes / no',  target: 0,     step: 0 },
+    { key: 'reps',    label: 'Count ·  reps',           target: 100,   step: 10 },
+    { key: 'pages',   label: 'Count ·  pages',          target: 20,    step: 5 },
+    { key: 'steps',   label: 'Count ·  steps',          target: 10000, step: 1000 },
+    { key: 'min',     label: 'Time ·  minutes',         target: 30,    step: 5 },
+    { key: 'hrs',     label: 'Time ·  hours',           target: 1,     step: 0.25 },
+    { key: 'glasses', label: 'Volume ·  glasses',       target: 8,     step: 1 },
+    { key: 'oz',      label: 'Volume ·  ounces (oz)',   target: 64,    step: 8 },
+    { key: 'ml',      label: 'Volume ·  millilitres',   target: 2000,  step: 250 },
+    { key: 'km',      label: 'Distance ·  kilometres',  target: 5,     step: 1 },
+    { key: 'mi',      label: 'Distance ·  miles',       target: 3,     step: 1 },
   ];
   function unitPreset(key) { return UNIT_PRESETS.find(u => u.key === key) || UNIT_PRESETS[0]; }
 
@@ -1045,41 +1089,75 @@
     }
   });
 
-  /* ===== Add habit (with unit dropdown + smart target prefill) ===== */
+  /* ===== Custom unit dropdown ===== */
   const addInput = document.getElementById('add-input');
-  const addUnitSelect = document.getElementById('add-unit-select');
+  const unitTrigger = document.getElementById('unit-trigger');
+  const unitLabel = document.getElementById('unit-trigger-label');
+  const unitPanel = document.getElementById('unit-panel');
   const addTarget = document.getElementById('add-target');
-  // populate the unit dropdown
-  addUnitSelect.innerHTML = UNIT_PRESETS.map(u => `<option value="${u.key}">${u.label}</option>`).join('');
-  function syncAddTargetVisibility() {
-    const p = unitPreset(addUnitSelect.value);
+  let currentUnitKey = '';
+
+  function renderUnitPanel() {
+    unitPanel.innerHTML = UNIT_PRESETS.map(u => {
+      const meta = u.target > 0 ? `${u.target} · +${u.step}` : '';
+      return `<div class="unit-opt ${u.key === currentUnitKey ? 'selected' : ''}" data-key="${u.key}">
+        <span class="unit-opt-name">${u.label}</span>
+        <span class="unit-opt-meta">${meta}</span>
+      </div>`;
+    }).join('');
+  }
+  function setUnit(k) {
+    currentUnitKey = k;
+    const p = unitPreset(k);
+    unitLabel.textContent = p.label;
     if (p.target > 0) {
       addTarget.classList.remove('hidden');
-      addTarget.placeholder = `target (${p.target} default)`;
-      if (!addTarget.value) addTarget.value = p.target;
+      addTarget.placeholder = `target (${p.target})`;
+      addTarget.value = p.target;
     } else {
       addTarget.classList.add('hidden');
       addTarget.value = '';
     }
+    renderUnitPanel();
   }
-  addUnitSelect.addEventListener('change', syncAddTargetVisibility);
-  syncAddTargetVisibility();
+  function openUnitPanel() {
+    renderUnitPanel();
+    unitPanel.classList.add('open');
+    unitTrigger.classList.add('open');
+  }
+  function closeUnitPanel() {
+    unitPanel.classList.remove('open');
+    unitTrigger.classList.remove('open');
+  }
+  unitTrigger.addEventListener('click', e => {
+    e.stopPropagation();
+    unitPanel.classList.contains('open') ? closeUnitPanel() : openUnitPanel();
+  });
+  unitPanel.addEventListener('click', e => {
+    const opt = e.target.closest('.unit-opt'); if (!opt) return;
+    setUnit(opt.dataset.key);
+    closeUnitPanel();
+  });
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#unit-picker')) closeUnitPanel();
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && unitPanel.classList.contains('open')) closeUnitPanel();
+  });
+  setUnit('');
 
   function addHabit() {
     const v = addInput.value.trim(); if (!v) return;
-    const unitKey = addUnitSelect.value;
-    const preset = unitPreset(unitKey);
+    const preset = unitPreset(currentUnitKey);
     const target = preset.target > 0 ? (parseFloat(addTarget.value) || preset.target) : 0;
     const step = preset.step || (target > 0 ? Math.max(1, Math.round(target / 8)) : 0);
-    const h = {
+    habits.push({
       id: uid(), name: v, log: [], created: Date.now(),
-      target, unit: unitKey, step, qty: {},
-    };
-    habits.push(h);
+      target, unit: currentUnitKey, step, qty: {},
+    });
     Store.set('habits', habits);
     addInput.value = '';
-    addUnitSelect.value = '';
-    syncAddTargetVisibility();
+    setUnit(''); // reset to yes/no for next entry
     renderList();
   }
   document.getElementById('add-btn').addEventListener('click', addHabit);
