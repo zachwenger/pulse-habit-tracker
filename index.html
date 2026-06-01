@@ -194,8 +194,52 @@
 
   /* add row */
   .add-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-top: 14px; }
-  .add-target-row { display: grid; grid-template-columns: 1fr 100px; gap: 8px; margin-top: 8px; }
+  .add-target-row { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
   .add-target-row.hidden { display: none; }
+
+  /* ── DAILY GOAL CARD ── */
+  .goal-card {
+    padding: 14px 14px 12px; border-radius: 12px; position: relative;
+    background: linear-gradient(135deg, rgba(var(--cy-rgb),0.07), rgba(var(--cy-rgb),0.02));
+    border: 1px solid rgba(var(--cy-rgb), 0.25);
+    animation: dropIn .2s cubic-bezier(.4,0,.2,1);
+  }
+  .goal-card.hidden { display: none; }
+  .goal-label {
+    font-family: var(--f-mono); font-size: 10px; letter-spacing: 3px;
+    color: var(--cy); text-transform: uppercase; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .goal-label::before { content:''; width: 5px; height: 5px; background: var(--cy);
+    border-radius: 50%; box-shadow: 0 0 6px var(--cy); }
+  .goal-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .goal-target {
+    width: 88px; padding: 8px 10px; border-radius: 8px;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(var(--cy-rgb), 0.3);
+    color: var(--cy-hi); font-family: var(--f-mono); font-size: 22px; font-weight: 600;
+    outline: none; text-align: center; transition: all .2s;
+  }
+  .goal-target:focus { border-color: var(--cy);
+    box-shadow: 0 0 0 3px rgba(var(--cy-rgb), 0.15); background: rgba(var(--cy-rgb), 0.05); }
+  .goal-unit {
+    font-family: var(--f-mono); font-size: 14px; color: var(--cy-hi);
+    font-weight: 600; letter-spacing: 1px;
+  }
+  .goal-per { font-family: var(--f-mono); font-size: 12px; color: var(--fg-3);
+    letter-spacing: 1px; text-transform: uppercase; }
+  .goal-clear {
+    margin-left: auto; background: none; border: 1px solid var(--line);
+    width: 28px; height: 28px; border-radius: 50%; color: var(--fg-4);
+    font-size: 18px; cursor: pointer; transition: all .2s; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .goal-clear:hover { color: var(--danger); border-color: var(--danger); }
+  .goal-step {
+    font-family: var(--f-mono); font-size: 10px; letter-spacing: 2px;
+    color: var(--fg-4); margin-top: 10px; text-transform: uppercase;
+    padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.04);
+  }
+  .goal-step b { color: var(--cy-hi); font-weight: 600; }
 
   /* ── CUSTOM UNIT DROPDOWN ── */
   .unit-picker { position: relative; }
@@ -669,12 +713,21 @@
     <div class="add-target-row" id="add-target-row">
       <div class="unit-picker" id="unit-picker">
         <button class="unit-trigger" id="unit-trigger" type="button">
-          <span id="unit-trigger-label">Just check ·  yes / no</span>
+          <span id="unit-trigger-label">+ Track an amount per day · optional</span>
           <span class="caret">▾</span>
         </button>
         <div class="unit-panel" id="unit-panel"></div>
       </div>
-      <input class="add-input hidden" id="add-target" type="number" min="0" placeholder="target" inputmode="decimal">
+      <div class="goal-card hidden" id="goal-card">
+        <div class="goal-label">Daily goal</div>
+        <div class="goal-row">
+          <input class="goal-target" id="add-target" type="number" min="1" inputmode="decimal" step="any">
+          <span class="goal-unit" id="goal-unit">oz</span>
+          <span class="goal-per">per day</span>
+          <button class="goal-clear" id="goal-clear" type="button" aria-label="Clear target">×</button>
+        </div>
+        <div class="goal-step">Each tap adds <b id="goal-step-amount">+8 oz</b></div>
+      </div>
     </div>
   </div>
 
@@ -819,21 +872,23 @@
   const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
   // Unit presets — referenced against Habitify, Productive, Streaks, Strides.
-  // Categories: yes/no · count · time · volume · distance. Generic across most habits.
+  // Categories: count · time · volume · distance. No yes/no option — that's the default
+  // when the user doesn't pick a unit (cleaner UI: pick a unit when you want a target,
+  // skip it for simple daily checks).
   const UNIT_PRESETS = [
-    { key: '',        label: 'Just check ·  yes / no',  target: 0,     step: 0 },
-    { key: 'reps',    label: 'Count ·  reps',           target: 100,   step: 10 },
-    { key: 'pages',   label: 'Count ·  pages',          target: 20,    step: 5 },
-    { key: 'steps',   label: 'Count ·  steps',          target: 10000, step: 1000 },
-    { key: 'min',     label: 'Time ·  minutes',         target: 30,    step: 5 },
-    { key: 'hrs',     label: 'Time ·  hours',           target: 1,     step: 0.25 },
-    { key: 'glasses', label: 'Volume ·  glasses',       target: 8,     step: 1 },
-    { key: 'oz',      label: 'Volume ·  ounces (oz)',   target: 64,    step: 8 },
-    { key: 'ml',      label: 'Volume ·  millilitres',   target: 2000,  step: 250 },
-    { key: 'km',      label: 'Distance ·  kilometres',  target: 5,     step: 1 },
-    { key: 'mi',      label: 'Distance ·  miles',       target: 3,     step: 1 },
+    { key: 'reps',    label: 'Count',     unit: 'reps',        target: 100,   step: 10 },
+    { key: 'pages',   label: 'Count',     unit: 'pages',       target: 20,    step: 5 },
+    { key: 'steps',   label: 'Count',     unit: 'steps',       target: 10000, step: 1000 },
+    { key: 'min',     label: 'Time',      unit: 'min',         target: 30,    step: 5 },
+    { key: 'hrs',     label: 'Time',      unit: 'hrs',         target: 1,     step: 0.25 },
+    { key: 'glasses', label: 'Volume',    unit: 'glasses',     target: 8,     step: 1 },
+    { key: 'oz',      label: 'Volume',    unit: 'oz',          target: 64,    step: 8 },
+    { key: 'ml',      label: 'Volume',    unit: 'ml',          target: 2000,  step: 250 },
+    { key: 'km',      label: 'Distance',  unit: 'km',          target: 5,     step: 1 },
+    { key: 'mi',      label: 'Distance',  unit: 'mi',          target: 3,     step: 1 },
   ];
-  function unitPreset(key) { return UNIT_PRESETS.find(u => u.key === key) || UNIT_PRESETS[0]; }
+  const NO_UNIT = { key: '', label: '', unit: '', target: 0, step: 0 };
+  function unitPreset(key) { return UNIT_PRESETS.find(u => u.key === key) || NO_UNIT; }
 
   let habits = Store.get('habits', null);
   if (habits === null) {
@@ -1089,37 +1144,51 @@
     }
   });
 
-  /* ===== Custom unit dropdown ===== */
+  /* ===== Custom unit dropdown + goal card ===== */
   const addInput = document.getElementById('add-input');
   const unitTrigger = document.getElementById('unit-trigger');
   const unitLabel = document.getElementById('unit-trigger-label');
   const unitPanel = document.getElementById('unit-panel');
+  const goalCard = document.getElementById('goal-card');
+  const goalUnitEl = document.getElementById('goal-unit');
+  const goalStepEl = document.getElementById('goal-step-amount');
+  const goalClearBtn = document.getElementById('goal-clear');
   const addTarget = document.getElementById('add-target');
   let currentUnitKey = '';
 
+  const TRIGGER_PLACEHOLDER = '+ Track an amount per day · optional';
+
   function renderUnitPanel() {
     unitPanel.innerHTML = UNIT_PRESETS.map(u => {
-      const meta = u.target > 0 ? `${u.target} · +${u.step}` : '';
       return `<div class="unit-opt ${u.key === currentUnitKey ? 'selected' : ''}" data-key="${u.key}">
-        <span class="unit-opt-name">${u.label}</span>
-        <span class="unit-opt-meta">${meta}</span>
+        <span class="unit-opt-name">${u.label} ·  ${u.unit}</span>
+        <span class="unit-opt-meta">${u.target} / ${u.unit}</span>
       </div>`;
     }).join('');
   }
+
+  function refreshGoalStep() {
+    const p = unitPreset(currentUnitKey);
+    if (p.step > 0) goalStepEl.textContent = `+${p.step} ${p.unit}`;
+  }
+
   function setUnit(k) {
     currentUnitKey = k;
     const p = unitPreset(k);
-    unitLabel.textContent = p.label;
     if (p.target > 0) {
-      addTarget.classList.remove('hidden');
-      addTarget.placeholder = `target (${p.target})`;
+      unitLabel.textContent = `${p.label} ·  ${p.unit}`;
+      goalUnitEl.textContent = p.unit;
       addTarget.value = p.target;
+      refreshGoalStep();
+      goalCard.classList.remove('hidden');
     } else {
-      addTarget.classList.add('hidden');
+      unitLabel.textContent = TRIGGER_PLACEHOLDER;
       addTarget.value = '';
+      goalCard.classList.add('hidden');
     }
     renderUnitPanel();
   }
+
   function openUnitPanel() {
     renderUnitPanel();
     unitPanel.classList.add('open');
@@ -1138,6 +1207,7 @@
     setUnit(opt.dataset.key);
     closeUnitPanel();
   });
+  goalClearBtn.addEventListener('click', () => setUnit(''));
   document.addEventListener('click', e => {
     if (!e.target.closest('#unit-picker')) closeUnitPanel();
   });
