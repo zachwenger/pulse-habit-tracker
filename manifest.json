@@ -1,0 +1,14 @@
+{
+  "name": "PULSE",
+  "short_name": "PULSE",
+  "description": "Minimal habit tracker — daily check + per-habit consistency graph.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#020510",
+  "theme_color": "#020510",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

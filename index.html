@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#020510">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="PULSE">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<title>PULSE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { overscroll-behavior-y: contain; }
+  :root {
+    --bg: #020510;
+    --surface: #080c1c;
+    --surface-2: #0d1228;
+    --line: #16203a;
+    --fg: #fff;
+    --fg-2: #c8d4f0;
+    --fg-3: #7a89b8;
+    --fg-4: #43547e;
+    --fg-5: #1e2842;
+    --cy: #00e0ff;
+    --cy-hi: #80f0ff;
+    --cy-dim: #006688;
+    --cy-glow: 0 0 12px rgba(0,224,255,0.5);
+    --cy-glow-soft: 0 0 8px rgba(0,224,255,0.3);
+    --danger: #ff4477;
+    --f-mono: 'JetBrains Mono', ui-monospace, monospace;
+    --f-display: 'Instrument Serif', 'Times New Roman', serif;
+  }
+  body {
+    background: var(--bg); color: var(--fg);
+    font-family: 'Inter', sans-serif; font-weight: 400;
+    min-height: 100vh; position: relative; overflow-x: hidden;
+    padding-top: env(safe-area-inset-top, 0);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    font-size: 16px; line-height: 1.5;
+  }
+  /* ambient aurora */
+  body::before {
+    content: ''; position: fixed; inset: -10%; pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(600px 400px at 20% 10%, rgba(0,224,255,0.10), transparent 60%),
+      radial-gradient(700px 500px at 90% 20%, rgba(122,92,255,0.06), transparent 55%),
+      radial-gradient(800px 550px at 60% 95%, rgba(0,224,255,0.06), transparent 60%);
+    filter: blur(20px); animation: aurora 24s ease-in-out infinite alternate;
+  }
+  @keyframes aurora {
+    0% { transform: translate3d(0,0,0) scale(1); }
+    50% { transform: translate3d(-2%, 1%, 0) scale(1.04); }
+    100% { transform: translate3d(2%, -1%, 0) scale(1.02); }
+  }
+  /* scanline overlay */
+  body::after {
+    content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: 0.04;
+    background-image: repeating-linear-gradient(180deg, rgba(255,255,255,0.4) 0, rgba(255,255,255,0.4) 1px, transparent 1px, transparent 3px);
+  }
+  /* HUD corner brackets */
+  .hud { position: fixed; inset: 0; pointer-events: none; z-index: 2; }
+  .hud > span { position: absolute; width: 16px; height: 16px;
+    border-color: rgba(0,224,255,0.45); border-style: solid; border-width: 0; }
+  .hud > .tl { top: 12px; left: 12px; border-top-width: 1px; border-left-width: 1px; }
+  .hud > .tr { top: 12px; right: 12px; border-top-width: 1px; border-right-width: 1px; }
+  .hud > .bl { bottom: 12px; left: 12px; border-bottom-width: 1px; border-left-width: 1px; }
+  .hud > .br { bottom: 12px; right: 12px; border-bottom-width: 1px; border-right-width: 1px; }
+
+  .wrap { max-width: 520px; margin: 0 auto; padding: 28px 20px 80px; position: relative; z-index: 3; }
+
+  /* header */
+  .head {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 26px;
+    font-family: var(--f-mono); font-size: 11px; letter-spacing: 4px; text-transform: uppercase;
+  }
+  .logo { display: flex; align-items: center; gap: 10px; font-weight: 500; color: var(--fg); letter-spacing: 8px; font-size: 13px; }
+  .logo-dot { width: 6px; height: 6px; background: var(--cy); border-radius: 50%; box-shadow: var(--cy-glow); animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity: 0.5; } }
+  .head-right { color: var(--fg-3); letter-spacing: 3px; }
+  .head-right b { color: var(--cy-hi); font-weight: 500; }
+
+  /* hero summary */
+  .hero {
+    margin-bottom: 32px; padding-bottom: 22px; border-bottom: 1px solid var(--line);
+  }
+  .hero-title { font-family: var(--f-display); font-size: clamp(40px, 11vw, 60px);
+    line-height: 0.95; letter-spacing: -2px; color: var(--fg); }
+  .hero-title em { color: var(--cy); font-style: italic;
+    text-shadow: 0 0 24px rgba(0,224,255,0.4); }
+  .hero-meta { display: flex; gap: 22px; margin-top: 14px;
+    font-family: var(--f-mono); font-size: 10px; letter-spacing: 3px; color: var(--fg-4); text-transform: uppercase; }
+  .hero-meta span b { color: var(--cy-hi); font-weight: 500; }
+
+  /* habit list */
+  .habits { display: flex; flex-direction: column; gap: 14px; }
+  .habit {
+    position: relative;
+    padding: 18px 18px;
+    background: linear-gradient(180deg, rgba(13,18,40,0.7), rgba(8,12,28,0.7));
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    display: grid; grid-template-columns: 36px 1fr; gap: 14px; align-items: center;
+    transition: border-color .25s ease, transform .15s ease, box-shadow .25s ease;
+    cursor: pointer; -webkit-user-select: none; user-select: none;
+  }
+  .habit:hover { border-color: rgba(0,224,255,0.2); }
+  .habit:active { transform: scale(0.99); }
+  .habit.done { border-color: rgba(0,224,255,0.35);
+    box-shadow: 0 0 24px -8px rgba(0,224,255,0.4), 0 0 0 1px rgba(0,224,255,0.1) inset; }
+
+  .h-check { width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--fg-4);
+    position: relative; flex-shrink: 0;
+    transition: all .3s cubic-bezier(.34,1.56,.64,1);
+    background: radial-gradient(circle, transparent 60%, rgba(0,224,255,0.05));
+  }
+  .habit.done .h-check {
+    background: radial-gradient(circle, var(--cy-hi), var(--cy));
+    border-color: var(--cy-hi);
+    box-shadow: 0 0 18px rgba(0,224,255,0.6), inset 0 0 8px rgba(255,255,255,0.3);
+  }
+  .habit.done .h-check::after {
+    content: ''; position: absolute; left: 12px; top: 8px; width: 6px; height: 14px;
+    border: solid #020510; border-width: 0 2.5px 2.5px 0; transform: rotate(45deg);
+  }
+  .h-check.pop { animation: pop .4s cubic-bezier(.34,1.56,.64,1); }
+  @keyframes pop { 0%{transform:scale(1);} 40%{transform:scale(1.3);} 100%{transform:scale(1);} }
+
+  .h-body { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .h-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .h-name { font-family: var(--f-display); font-size: 22px; font-weight: 400; color: var(--fg);
+    letter-spacing: -.3px; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .habit.done .h-name { color: var(--fg-2); }
+  .h-streak {
+    font-family: var(--f-mono); font-size: 11px; color: var(--fg-4); letter-spacing: 1px;
+    font-variant-numeric: tabular-nums; flex-shrink: 0;
+  }
+  .h-streak b { color: var(--cy-hi); font-weight: 500; }
+  .h-streak.cold { color: var(--fg-5); }
+  .h-trail {
+    display: grid; grid-template-columns: repeat(21, 1fr); gap: 3px;
+    height: 14px; margin-top: 2px;
+  }
+  .h-cell {
+    border-radius: 2px;
+    background: rgba(255,255,255,0.04);
+    transition: background .3s ease, box-shadow .3s ease;
+  }
+  .h-cell.l1 { background: rgba(0,224,255,0.18); }
+  .h-cell.l2 { background: rgba(0,224,255,0.4); }
+  .h-cell.l3 { background: rgba(0,224,255,0.7); box-shadow: 0 0 4px rgba(0,224,255,0.4); }
+  .h-cell.l4 { background: linear-gradient(135deg, var(--cy-hi), var(--cy));
+    box-shadow: 0 0 6px rgba(0,224,255,0.6); }
+  .h-cell.today { outline: 1px solid rgba(0,224,255,0.6); outline-offset: 1px; border-radius: 2px; }
+
+  /* add row */
+  .add-row { display: flex; gap: 8px; margin-top: 18px; }
+  .add-input {
+    flex: 1; padding: 14px 16px; border-radius: 12px;
+    background: rgba(255,255,255,0.025); border: 1px solid var(--line);
+    color: var(--fg); font-family: inherit; font-size: 16px; outline: none;
+    transition: border-color .2s ease;
+  }
+  .add-input::placeholder { color: var(--fg-4); }
+  .add-input:focus { border-color: var(--cy); }
+  .add-btn {
+    padding: 0 22px; border-radius: 12px; border: none; cursor: pointer;
+    background: linear-gradient(135deg, var(--cy-hi), var(--cy)); color: #020510;
+    font-family: var(--f-mono); font-size: 11px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase;
+    box-shadow: 0 8px 20px -4px rgba(0,224,255,0.5), inset 0 1px 0 rgba(255,255,255,0.3);
+    transition: transform .15s ease;
+  }
+  .add-btn:active { transform: scale(0.96); }
+
+  /* empty state */
+  .empty {
+    padding: 60px 20px; text-align: center;
+    border: 1px dashed var(--line); border-radius: 16px;
+  }
+  .empty svg { width: 56px; height: 56px; stroke: var(--cy); fill: none;
+    stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; opacity: 0.6;
+    margin-bottom: 14px; }
+  .empty-title { font-family: var(--f-display); font-size: 24px; color: var(--fg-2); margin-bottom: 6px; }
+  .empty-sub { font-size: 13px; color: var(--fg-4); line-height: 1.6; max-width: 280px; margin: 0 auto; }
+
+  /* detail modal */
+  .detail {
+    position: fixed; inset: 0; z-index: 50; display: none; padding: 20px;
+    background: rgba(2,5,16,0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    overflow-y: auto;
+  }
+  .detail.open { display: block; animation: fadeIn .25s ease; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .detail-inner { max-width: 520px; margin: 0 auto; padding-top: 20px; padding-bottom: 60px; }
+  .detail-head {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px;
+    font-family: var(--f-mono); font-size: 10px; letter-spacing: 3px; color: var(--fg-4); text-transform: uppercase;
+  }
+  .detail-back { background: none; border: 1px solid var(--line); color: var(--fg-2);
+    width: 38px; height: 38px; border-radius: 50%; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; transition: all .2s; }
+  .detail-back:hover { border-color: var(--cy); color: var(--cy-hi); }
+  .detail-back svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .detail-act { display: flex; gap: 8px; }
+  .detail-act button {
+    background: rgba(255,255,255,0.03); border: 1px solid var(--line); color: var(--fg-3);
+    padding: 8px 14px; border-radius: 10px; cursor: pointer;
+    font-family: var(--f-mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    transition: all .2s;
+  }
+  .detail-act button:hover { color: var(--cy-hi); border-color: var(--cy-dim); }
+  .detail-act .del:hover { color: var(--danger); border-color: var(--danger); }
+
+  .detail-title { font-family: var(--f-display); font-size: 48px;
+    color: var(--fg); letter-spacing: -1.5px; line-height: 1; margin-bottom: 24px; }
+
+  .stats {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 32px;
+  }
+  .stat {
+    padding: 14px 10px; border-radius: 12px; text-align: center;
+    background: linear-gradient(180deg, rgba(13,18,40,0.6), rgba(8,12,28,0.6));
+    border: 1px solid var(--line);
+  }
+  .stat-label { font-family: var(--f-mono); font-size: 9px; letter-spacing: 2px; color: var(--fg-4);
+    text-transform: uppercase; margin-bottom: 6px; }
+  .stat-val { font-family: var(--f-mono); font-size: 24px; color: var(--cy-hi);
+    font-variant-numeric: tabular-nums; line-height: 1;
+    text-shadow: 0 0 12px rgba(0,224,255,0.3); }
+  .stat-val.dim { color: var(--fg); text-shadow: none; }
+
+  /* year heatmap */
+  .heat-sec { margin-bottom: 32px; }
+  .heat-head { font-family: var(--f-mono); font-size: 10px; letter-spacing: 3px;
+    color: var(--fg-4); text-transform: uppercase; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px; }
+  .heat-head::before { content: ''; width: 5px; height: 5px; background: var(--cy);
+    border-radius: 50%; box-shadow: var(--cy-glow); }
+  .heat {
+    display: grid; grid-template-rows: repeat(7, 1fr); grid-auto-flow: column;
+    grid-auto-columns: 1fr; gap: 2.5px;
+  }
+  .heat-cell {
+    aspect-ratio: 1; border-radius: 2px;
+    background: rgba(255,255,255,0.03);
+    transition: background .2s;
+  }
+  .heat-cell.l1 { background: rgba(0,224,255,0.18); }
+  .heat-cell.l2 { background: rgba(0,224,255,0.4); }
+  .heat-cell.l3 { background: rgba(0,224,255,0.7); }
+  .heat-cell.l4 { background: linear-gradient(135deg, var(--cy-hi), var(--cy));
+    box-shadow: 0 0 4px rgba(0,224,255,0.5); }
+  .heat-cell.today { outline: 1.5px solid var(--cy-hi); outline-offset: 1px; }
+  .heat-foot { display: flex; justify-content: space-between; margin-top: 10px;
+    font-family: var(--f-mono); font-size: 9px; letter-spacing: 2px; color: var(--fg-4); text-transform: uppercase; }
+  .heat-legend { display: flex; align-items: center; gap: 4px; }
+  .legend-cell { width: 8px; height: 8px; border-radius: 2px; }
+
+  /* line chart */
+  .chart {
+    width: 100%; height: 140px; margin: 12px 0 6px; display: block;
+  }
+  .chart .area { fill: url(#areaGrad); }
+  .chart .line { fill: none; stroke: url(#lineGrad); stroke-width: 1.5;
+    stroke-linecap: round; stroke-linejoin: round;
+    filter: drop-shadow(0 0 4px rgba(0,224,255,0.6)); }
+  .chart .dot { fill: var(--cy-hi); filter: drop-shadow(0 0 4px rgba(128,240,255,0.7)); }
+  .chart .grid { stroke: rgba(255,255,255,0.04); stroke-width: 1; stroke-dasharray: 2 3; }
+  .chart text { fill: var(--fg-4); font-family: var(--f-mono); font-size: 9px; letter-spacing: 1px; }
+  .chart-empty { padding: 50px 20px; text-align: center; color: var(--fg-4); font-size: 12px; }
+
+  /* FAB */
+  .fab {
+    position: fixed; bottom: max(20px, env(safe-area-inset-bottom)); right: 20px; z-index: 30;
+    width: 56px; height: 56px; border-radius: 50%; border: none; cursor: pointer;
+    background: linear-gradient(135deg, var(--cy-hi), var(--cy));
+    box-shadow: 0 12px 32px -8px rgba(0,224,255,0.6),
+                0 0 0 1px rgba(128,240,255,0.4) inset,
+                0 1px 0 rgba(255,255,255,0.4) inset;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .fab:hover { transform: translateY(-2px) scale(1.04); }
+  .fab:active { transform: scale(0.92); }
+  .fab svg { width: 24px; height: 24px; stroke: #020510; fill: none; stroke-width: 2.5; stroke-linecap: round; }
+
+  /* toast */
+  .toasts { position: fixed; bottom: 100px; left: 20px; right: 20px; z-index: 60;
+    display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+  .toast {
+    padding: 12px 16px; border-radius: 12px;
+    background: linear-gradient(180deg, rgba(13,18,40,0.95), rgba(8,12,28,0.95));
+    border: 1px solid rgba(0,224,255,0.3);
+    box-shadow: 0 12px 24px -4px rgba(0,0,0,0.7), 0 0 16px -4px rgba(0,224,255,0.3);
+    backdrop-filter: blur(10px);
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; color: var(--fg);
+    animation: toastIn .3s cubic-bezier(.34,1.56,.64,1), toastOut .3s ease 2.5s forwards;
+    max-width: 360px; margin: 0 auto;
+  }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  @keyframes toastOut { to { opacity: 0; transform: translateY(6px); } }
+  .toast-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--cy);
+    box-shadow: var(--cy-glow); flex-shrink: 0; }
+  .toast b { color: var(--cy-hi); }
+  .toast em { color: var(--cy-hi); font-family: var(--f-display); font-style: italic; }
+
+  /* burst particles */
+  .burst { position: fixed; pointer-events: none; z-index: 90; width: 8px; height: 8px;
+    border-radius: 50%; background: var(--cy-hi); box-shadow: 0 0 8px var(--cy-hi);
+    animation: burst .8s cubic-bezier(.2,.7,.3,1) forwards; }
+  @keyframes burst {
+    0% { transform: translate(0,0) scale(1); opacity: 1; }
+    100% { transform: translate(var(--bx, 0), var(--by, 0)) scale(0); opacity: 0; }
+  }
+
+  @media (max-width: 380px) {
+    .wrap { padding: 22px 14px 80px; }
+    .h-name { font-size: 20px; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .detail-title { font-size: 38px; }
+  }
+</style>
+</head>
+<body>
+  <div class="hud"><span class="tl"></span><span class="tr"></span><span class="bl"></span><span class="br"></span></div>
+  <div class="toasts" id="toasts"></div>
+
+  <div class="wrap" id="main">
+    <div class="head">
+      <div class="logo"><span class="logo-dot"></span>PULSE</div>
+      <div class="head-right" id="today-meta">—</div>
+    </div>
+
+    <div class="hero">
+      <div class="hero-title" id="hero-title">Hold the <em>line</em>.</div>
+      <div class="hero-meta">
+        <span><b id="hero-n">0</b> active</span>
+        <span><b id="hero-done">0 / 0</b> today</span>
+        <span><b id="hero-top">0d</b> best streak</span>
+      </div>
+    </div>
+
+    <div class="habits" id="habits"></div>
+
+    <div class="add-row" id="add-row">
+      <input class="add-input" id="add-input" placeholder="New habit…" maxlength="60" autocomplete="off">
+      <button class="add-btn" id="add-btn">Add</button>
+    </div>
+  </div>
+
+  <!-- Detail / chart overlay -->
+  <div class="detail" id="detail">
+    <div class="detail-inner">
+      <div class="detail-head">
+        <button class="detail-back" id="detail-back" aria-label="Back">
+          <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </button>
+        <span id="detail-since">—</span>
+        <div class="detail-act">
+          <button id="detail-edit">Rename</button>
+          <button class="del" id="detail-del">Delete</button>
+        </div>
+      </div>
+      <div class="detail-title" id="detail-title">Habit</div>
+
+      <div class="stats">
+        <div class="stat"><div class="stat-label">Current</div><div class="stat-val" id="s-current">0</div></div>
+        <div class="stat"><div class="stat-label">Best</div><div class="stat-val" id="s-best">0</div></div>
+        <div class="stat"><div class="stat-label">Total</div><div class="stat-val dim" id="s-total">0</div></div>
+        <div class="stat"><div class="stat-label">30 day</div><div class="stat-val dim" id="s-pct">0%</div></div>
+      </div>
+
+      <div class="heat-sec">
+        <div class="heat-head">Consistency · 12 months</div>
+        <svg class="chart" id="chart" viewBox="0 0 400 140" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#006688"/>
+              <stop offset="100%" stop-color="#80f0ff"/>
+            </linearGradient>
+            <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#00e0ff" stop-opacity="0.35"/>
+              <stop offset="100%" stop-color="#00e0ff" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="heat" id="heat"></div>
+        <div class="heat-foot">
+          <span id="heat-range">—</span>
+          <div class="heat-legend">
+            <span>less</span>
+            <span class="legend-cell"></span>
+            <span class="legend-cell l1"></span>
+            <span class="legend-cell l2"></span>
+            <span class="legend-cell l3"></span>
+            <span class="legend-cell l4"></span>
+            <span>more</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button class="fab" id="fab" aria-label="Add habit">
+    <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  </button>
+
+<script>
+  /* ===== Store ===== */
+  const Store = {
+    get(k, d) { try { const v = localStorage.getItem('pulse.'+k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+    set(k, v) { localStorage.setItem('pulse.'+k, JSON.stringify(v)); },
+  };
+  const uid = () => Math.random().toString(36).slice(2, 9);
+  const today = () => new Date().toLocaleDateString('en-CA');
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  let habits = Store.get('habits', null);
+  if (habits === null) {
+    habits = [
+      { id: uid(), name: 'Train or move', log: [], created: Date.now() },
+      { id: uid(), name: 'Read 10 pages', log: [], created: Date.now() },
+      { id: uid(), name: 'Sleep by 12', log: [], created: Date.now() },
+    ];
+    Store.set('habits', habits);
+  }
+
+  /* ===== Streak + consistency helpers ===== */
+  function streak(log) {
+    if (!log.length) return 0;
+    const set = new Set(log);
+    const d = new Date(); d.setHours(0,0,0,0);
+    if (!set.has(today())) d.setDate(d.getDate() - 1);
+    let n = 0;
+    while (set.has(d.toLocaleDateString('en-CA'))) { n++; d.setDate(d.getDate() - 1); }
+    return n;
+  }
+  function bestStreak(log) {
+    if (!log.length) return 0;
+    const sorted = [...log].sort();
+    let best = 1, cur = 1;
+    for (let i = 1; i < sorted.length; i++) {
+      const prev = new Date(sorted[i-1] + 'T00:00:00');
+      const next = new Date(sorted[i] + 'T00:00:00');
+      const diff = (next - prev) / 86400000;
+      if (diff === 1) { cur++; best = Math.max(best, cur); }
+      else cur = 1;
+    }
+    return best;
+  }
+  function pct30(log) {
+    let hit = 0;
+    for (let i = 0; i < 30; i++) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      if (log.includes(d.toLocaleDateString('en-CA'))) hit++;
+    }
+    return Math.round(hit / 30 * 100);
+  }
+  function levelOf(idx, sortedLog) {
+    // returns 0-4 for the heat-cell intensity. Uses a window approach.
+    // idx is the date key; this version takes a sorted log and a date.
+    return 0; // unused — we compute inline
+  }
+
+  /* ===== Toast + burst ===== */
+  function toast(html) {
+    const el = document.createElement('div');
+    el.className = 'toast'; el.innerHTML = `<div class="toast-dot"></div><div>${html}</div>`;
+    document.getElementById('toasts').appendChild(el);
+    setTimeout(() => el.remove(), 2900);
+  }
+  function burst(x, y, count) {
+    count = count || 14;
+    for (let i = 0; i < count; i++) {
+      const d = document.createElement('div');
+      d.className = 'burst';
+      const angle = (Math.PI * 2 * i) / count + Math.random() * 0.4;
+      const dist = 50 + Math.random() * 50;
+      d.style.left = (x - 4) + 'px';
+      d.style.top = (y - 4) + 'px';
+      d.style.setProperty('--bx', Math.cos(angle) * dist + 'px');
+      d.style.setProperty('--by', Math.sin(angle) * dist + 'px');
+      document.body.appendChild(d);
+      setTimeout(() => d.remove(), 900);
+    }
+  }
+
+  /* ===== Render list ===== */
+  const listEl = document.getElementById('habits');
+  function trailCells(log) {
+    // Last 21 days, oldest left → today right.
+    const cells = [];
+    for (let i = 20; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      const key = d.toLocaleDateString('en-CA');
+      const done = log.includes(key);
+      const isToday = i === 0;
+      // compute intensity = 1 + count of done in past 3-day window (for visual smoothing)
+      let win = 0;
+      for (let j = 0; j < 3; j++) {
+        const dd = new Date(d); dd.setDate(dd.getDate() - j);
+        if (log.includes(dd.toLocaleDateString('en-CA'))) win++;
+      }
+      let cls = '';
+      if (done) cls = win >= 3 ? 'l4' : win === 2 ? 'l3' : 'l2';
+      else if (win >= 1) cls = 'l1';
+      cells.push(`<div class="h-cell ${cls} ${isToday ? 'today' : ''}"></div>`);
+    }
+    return cells.join('');
+  }
+  function renderList() {
+    const t = today();
+    if (!habits.length) {
+      listEl.innerHTML = `<div class="empty">
+        <svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="22"/><polyline points="22 32 30 40 44 26"/></svg>
+        <div class="empty-title">Quiet system.</div>
+        <div class="empty-sub">Add your first habit below. Three to five small ones is the sweet spot — sleep, train, read, eat, build.</div>
+      </div>`;
+    } else {
+      listEl.innerHTML = habits.map(h => {
+        const done = h.log.includes(t);
+        const s = streak(h.log);
+        return `<div class="habit ${done ? 'done' : ''}" data-id="${h.id}">
+          <div class="h-check"></div>
+          <div class="h-body">
+            <div class="h-top">
+              <div class="h-name">${esc(h.name)}</div>
+              <div class="h-streak ${s === 0 ? 'cold' : ''}">${s > 0 ? `<b>${s}d</b> streak` : 'no streak'}</div>
+            </div>
+            <div class="h-trail">${trailCells(h.log)}</div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+    // hero numbers
+    const t2 = today();
+    const doneToday = habits.filter(h => h.log.includes(t2)).length;
+    const top = habits.reduce((m, h) => Math.max(m, streak(h.log)), 0);
+    document.getElementById('hero-n').textContent = habits.length;
+    document.getElementById('hero-done').textContent = `${doneToday} / ${habits.length}`;
+    document.getElementById('hero-top').textContent = top + 'd';
+    // headline
+    const heroEl = document.getElementById('hero-title');
+    if (!habits.length) heroEl.innerHTML = 'Hold the <em>line</em>.';
+    else if (doneToday === habits.length) heroEl.innerHTML = 'Locked <em>in</em>.';
+    else if (doneToday === 0) heroEl.innerHTML = 'Run the <em>list</em>.';
+    else heroEl.innerHTML = `<em>${habits.length - doneToday}</em> left.`;
+  }
+
+  /* ===== Toggle ===== */
+  listEl.addEventListener('click', e => {
+    const row = e.target.closest('.habit'); if (!row) return;
+    const id = row.dataset.id;
+    const h = habits.find(x => x.id === id); if (!h) return;
+    const t = today();
+    const wasDone = h.log.includes(t);
+    if (wasDone) {
+      h.log = h.log.filter(d => d !== t);
+    } else {
+      h.log.push(t);
+      if (navigator.vibrate) navigator.vibrate(12);
+      const r = row.getBoundingClientRect();
+      burst(r.left + 36, r.top + 35, 14);
+      const s = streak(h.log);
+      if ([7, 30, 100].includes(s)) {
+        toast(`<em>${s}-day</em> on <b>${esc(h.name)}</b>!`);
+      }
+    }
+    Store.set('habits', habits);
+    renderList();
+  });
+
+  // Long-press to open detail (or double-tap on row)
+  let pressTimer = null;
+  listEl.addEventListener('pointerdown', e => {
+    const row = e.target.closest('.habit'); if (!row) return;
+    pressTimer = setTimeout(() => {
+      openDetail(row.dataset.id);
+      pressTimer = null;
+    }, 500);
+  });
+  listEl.addEventListener('pointerup', () => { if (pressTimer) clearTimeout(pressTimer); });
+  listEl.addEventListener('pointerleave', () => { if (pressTimer) clearTimeout(pressTimer); });
+  listEl.addEventListener('pointercancel', () => { if (pressTimer) clearTimeout(pressTimer); });
+
+  // also tap the streak text to open detail
+  listEl.addEventListener('click', e => {
+    const s = e.target.closest('.h-streak');
+    if (!s) return;
+    const row = e.target.closest('.habit');
+    if (!row) return;
+    e.stopPropagation();
+    openDetail(row.dataset.id);
+  }, true);
+
+  /* ===== Add habit ===== */
+  const addInput = document.getElementById('add-input');
+  function addHabit() {
+    const v = addInput.value.trim(); if (!v) return;
+    habits.push({ id: uid(), name: v, log: [], created: Date.now() });
+    Store.set('habits', habits);
+    addInput.value = '';
+    renderList();
+  }
+  document.getElementById('add-btn').addEventListener('click', addHabit);
+  addInput.addEventListener('keydown', e => { if (e.key === 'Enter') addHabit(); });
+  document.getElementById('fab').addEventListener('click', () => {
+    addInput.focus();
+    addInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+
+  /* ===== Detail view ===== */
+  const detail = document.getElementById('detail');
+  let detailId = null;
+  function openDetail(id) {
+    detailId = id;
+    const h = habits.find(x => x.id === id); if (!h) return;
+    document.getElementById('detail-title').textContent = h.name;
+    const sinceDays = Math.max(1, Math.round((Date.now() - h.created) / 86400000));
+    document.getElementById('detail-since').textContent = `tracked ${sinceDays}d`;
+    document.getElementById('s-current').textContent = streak(h.log);
+    document.getElementById('s-best').textContent = bestStreak(h.log);
+    document.getElementById('s-total').textContent = h.log.length;
+    document.getElementById('s-pct').textContent = pct30(h.log) + '%';
+    renderHeat(h.log);
+    renderChart(h.log);
+    detail.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeDetail() {
+    detail.classList.remove('open');
+    document.body.style.overflow = '';
+    detailId = null;
+  }
+  document.getElementById('detail-back').addEventListener('click', closeDetail);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && detail.classList.contains('open')) closeDetail(); });
+  document.getElementById('detail-edit').addEventListener('click', () => {
+    const h = habits.find(x => x.id === detailId); if (!h) return;
+    const v = prompt('Rename habit', h.name);
+    if (v && v.trim()) { h.name = v.trim(); Store.set('habits', habits); renderList();
+      document.getElementById('detail-title').textContent = h.name; }
+  });
+  document.getElementById('detail-del').addEventListener('click', () => {
+    const h = habits.find(x => x.id === detailId); if (!h) return;
+    if (!confirm(`Delete "${h.name}" and all its history?`)) return;
+    habits = habits.filter(x => x.id !== detailId);
+    Store.set('habits', habits);
+    closeDetail(); renderList();
+  });
+
+  function renderHeat(log) {
+    const wrap = document.getElementById('heat');
+    const set = new Set(log);
+    const cells = [];
+    const todayD = new Date(); todayD.setHours(0,0,0,0);
+    const tDay = todayD.getDay();
+    let totalCells = 0;
+    for (let i = 51; i >= 0; i--) {
+      const wkStart = new Date(todayD); wkStart.setDate(wkStart.getDate() - i*7 - tDay);
+      for (let d = 0; d < 7; d++) {
+        const day = new Date(wkStart); day.setDate(day.getDate() + d);
+        if (day > todayD) { cells.push(`<div class="heat-cell" style="opacity:0"></div>`); continue; }
+        const key = day.toLocaleDateString('en-CA');
+        const done = set.has(key);
+        // window intensity
+        let win = 0;
+        for (let j = 0; j < 3; j++) {
+          const dd = new Date(day); dd.setDate(dd.getDate() - j);
+          if (set.has(dd.toLocaleDateString('en-CA'))) win++;
+        }
+        let cls = '';
+        if (done) cls = win >= 3 ? 'l4' : win === 2 ? 'l3' : 'l2';
+        else if (win >= 1) cls = 'l1';
+        const isToday = key === today();
+        cells.push(`<div class="heat-cell ${cls} ${isToday ? 'today' : ''}" title="${key}: ${done ? 'done' : 'missed'}"></div>`);
+        totalCells++;
+      }
+    }
+    wrap.innerHTML = cells.join('');
+    // range label
+    const start = new Date(todayD); start.setDate(start.getDate() - 51*7 - tDay);
+    document.getElementById('heat-range').textContent =
+      start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase() +
+      ' → ' + todayD.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
+  }
+
+  function renderChart(log) {
+    const svg = document.getElementById('chart');
+    [...svg.children].forEach(c => { if (c.tagName !== 'defs') svg.removeChild(c); });
+    if (!log.length) {
+      const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      t.setAttribute('x', 200); t.setAttribute('y', 70); t.setAttribute('text-anchor', 'middle');
+      t.setAttribute('font-size', 11);
+      t.textContent = 'log this habit to see the trend';
+      svg.appendChild(t); return;
+    }
+    const W = 400, H = 140, padT = 14, padB = 22, padL = 4, padR = 4;
+    const N = 30;
+    // 30-day rolling completion ratio
+    const points = [];
+    const set = new Set(log);
+    for (let i = N - 1; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      // 7-day rolling for smoothness
+      let hit = 0;
+      for (let j = 0; j < 7; j++) {
+        const dd = new Date(d); dd.setDate(dd.getDate() - j);
+        if (set.has(dd.toLocaleDateString('en-CA'))) hit++;
+      }
+      points.push(hit / 7);
+    }
+    const n = points.length;
+    const xs = points.map((_, i) => padL + (i * (W - padL - padR)) / (n - 1));
+    const ys = points.map(v => padT + (1 - v) * (H - padT - padB));
+    // grid lines
+    [0, 0.5, 1].forEach(p => {
+      const y = padT + (1 - p) * (H - padT - padB);
+      const ln = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      ln.setAttribute('class', 'grid');
+      ln.setAttribute('x1', padL); ln.setAttribute('x2', W - padR);
+      ln.setAttribute('y1', y); ln.setAttribute('y2', y);
+      svg.appendChild(ln);
+    });
+    const lineD = xs.map((x, i) => (i ? 'L' : 'M') + x.toFixed(1) + ' ' + ys[i].toFixed(1)).join(' ');
+    const areaD = lineD + ` L${xs[n-1].toFixed(1)} ${H - padB} L${xs[0].toFixed(1)} ${H - padB} Z`;
+    const ar = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    ar.setAttribute('class', 'area'); ar.setAttribute('d', areaD); svg.appendChild(ar);
+    const ln = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    ln.setAttribute('class', 'line'); ln.setAttribute('d', lineD); svg.appendChild(ln);
+    const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    dot.setAttribute('class', 'dot');
+    dot.setAttribute('cx', xs[n-1]); dot.setAttribute('cy', ys[n-1]); dot.setAttribute('r', 3);
+    svg.appendChild(dot);
+    // x ticks
+    [0, 14, 29].forEach(i => {
+      const d = new Date(); d.setDate(d.getDate() - (29 - i));
+      const lab = i === 29 ? 'TODAY' : d.toLocaleDateString('en-US',{month:'short',day:'numeric'}).toUpperCase();
+      const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+      t.setAttribute('x', xs[i]); t.setAttribute('y', H - 6);
+      t.setAttribute('text-anchor', i === 0 ? 'start' : i === 29 ? 'end' : 'middle');
+      t.textContent = lab; svg.appendChild(t);
+    });
+    // top label
+    const lab = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    lab.setAttribute('x', W - padR); lab.setAttribute('y', padT + 4); lab.setAttribute('text-anchor', 'end');
+    lab.textContent = '100%'; svg.appendChild(lab);
+  }
+
+  /* ===== Header date ===== */
+  function setTodayMeta() {
+    const d = new Date();
+    document.getElementById('today-meta').innerHTML =
+      d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).toUpperCase()
+      + ' · <b>SYS LIVE</b>';
+  }
+  setTodayMeta(); setInterval(setTodayMeta, 60000);
+
+  renderList();
+
+  /* ===== PWA ===== */
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js').catch(() => {});
+  }
+</script>
+</body>
+</html>

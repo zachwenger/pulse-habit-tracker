@@ -1,0 +1,10 @@
+.DS_Store
+Thumbs.db
+*.log
+node_modules/
+.vscode/
+.env
+.env.*
+
+# Claude per-user settings
+.claude/settings.local.json
