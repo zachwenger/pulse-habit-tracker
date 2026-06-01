@@ -143,6 +143,20 @@ Every interaction has motion. Designed to feel like a paid app, not a side proje
 - **Smooth scroll** + **text-rendering: optimizeLegibility** + antialiased fonts
 - **Respects `prefers-reduced-motion`** — all animations collapse to instant for users with vestibular sensitivity
 
+### Auto-update
+
+PWAs cached aggressively are a real problem — installed users can keep running stale code for weeks. PULSE handles this automatically:
+
+1. On every page load, the page asks the registered service worker to check the server for a newer build (`registration.update()`)
+2. If a newer `service-worker.js` is found, the new worker installs in the background
+3. The page asks the new worker to `skipWaiting` so it activates immediately instead of waiting for every tab to close
+4. The new worker `clients.claim()`s every open page on activate + broadcasts a `pulse-updated` message
+5. The page listens for either `controllerchange` or the `pulse-updated` broadcast and reloads silently
+
+Result: **you never need incognito or a manual hard refresh to see the latest version**. Open the app, give it a second, you'll be on the newest code. No "Version A vs Version B" drift between installed PWAs.
+
+The HTML itself is fetched **network-first** (with `cache: 'no-store'`) so even the very first page load on a return visit pulls fresh markup whenever possible. Static assets (icon, manifest, font CSS) use stale-while-revalidate — instant from cache, refreshed in the background.
+
 ### About / intro overlay
 
 First-time visitors see a one-shot intro explaining the gestures. The `?` button next to the PULSE logo reopens it anytime. The intro also has a `Reset data` button that wipes localStorage.

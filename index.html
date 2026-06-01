@@ -2149,9 +2149,57 @@
   });
   if (!Store.get('introSeen', false)) openIntro();
 
-  /* ===== PWA ===== */
+  /* ===== PWA + auto-update glue ─────────────────────────────────
+     Every page load:
+       1. Register the SW (idempotent — picks up existing if already there)
+       2. Force registration.update() to check the server for a newer SW
+       3. If a new SW installs, listen for it to take control + reload
+          the page silently. Result: users always run the latest code
+          without needing incognito or a manual hard refresh.            */
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js').catch(() => {});
+    (async () => {
+      try {
+        const reg = await navigator.serviceWorker.register('service-worker.js');
+
+        // Force an update check on every page load. If the server has a
+        // newer service-worker.js, this kicks off the install flow.
+        try { await reg.update(); } catch {}
+
+        // When a new SW finishes installing in the background, give it
+        // permission to take over immediately. The waiting → activating
+        // transition fires controllerchange below.
+        reg.addEventListener('updatefound', () => {
+          const nw = reg.installing;
+          if (!nw) return;
+          nw.addEventListener('statechange', () => {
+            if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+              // tell the waiting SW to skip its wait and activate
+              try { nw.postMessage({ type: 'SKIP_WAITING' }); } catch {}
+            }
+          });
+        });
+      } catch (e) { /* SW unavailable — app still runs fine without offline */ }
+    })();
+
+    // When a new SW takes control of the page, reload silently to pick
+    // up the new HTML/CSS/JS. Suppress on first load.
+    let initialController = navigator.serviceWorker.controller;
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!initialController) { initialController = navigator.serviceWorker.controller; return; }
+      if (refreshing) return;
+      refreshing = true;
+      location.reload();
+    });
+
+    // SW broadcast on activate — also reload so the UI always reflects
+    // the cache the SW just swapped in.
+    navigator.serviceWorker.addEventListener('message', e => {
+      if (e.data?.type === 'pulse-updated' && initialController && !refreshing) {
+        refreshing = true;
+        location.reload();
+      }
+    });
   }
 </script>
 </body>
