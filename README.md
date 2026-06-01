@@ -2,8 +2,8 @@
 
 # `● PULSE`
 
-**Niche habit tracker with a per-habit consistency graph.**
-Single-file PWA · cyan-on-black LED Jarvis aesthetic · offline-first · installable.
+**Minimal habit tracker with a per-habit consistency graph.**
+Single-file vanilla PWA · offline · installable · MIT.
 
 [**Live demo →**](https://zachwenger.github.io/pulse-habit-tracker/) &nbsp; · &nbsp; [Source](https://github.com/zachwenger/pulse-habit-tracker) &nbsp; · &nbsp; [Roadmap](#roadmap)
 
@@ -11,31 +11,139 @@ Single-file PWA · cyan-on-black LED Jarvis aesthetic · offline-first · instal
 
 ---
 
-## Why I built this
+## What it is
 
-I bounced between five habit-tracker apps over the past year and uninstalled every one for the same reason: **they all bury the streak under dashboards**. A habit tracker only has to do two things — let me tap a habit fast, and show me whether I'm actually consistent. Everything else is theater.
+A focused habit tracker. Three to five habits, one tap per habit per day, a beautiful per-habit consistency graph behind every row. Optional measurement targets (water, pages, time, distance) with smart tap-to-tally. No accounts, no servers, no telemetry. The whole app is one `index.html` file (~28KB) plus a service worker and an icon.
 
-PULSE is the version I wanted. Three to five habits, one tap each, a 12-month consistency graph per habit, nothing else.
+Built as a portfolio-grade open-source habit tracker. Forkable as a baseline template — pick your accent color, edit the seed habits, drop on GitHub Pages, done.
 
-Built as a single `index.html` PWA in a weekend. No build step, no framework, no backend, no analytics, no auth, no servers. The app is the file.
+## Live demo
+
+[`zachwenger.github.io/pulse-habit-tracker`](https://zachwenger.github.io/pulse-habit-tracker/)
+
+Open on your phone → Share menu → **Add to Home Screen** → installs as a real PWA: standalone display, custom splash, offline-first.
+
+---
 
 ## Features
 
-- **One-tap daily check-in.** 32px tap circle, haptic feedback, accent particle burst on streak milestones (7d / 30d / 100d).
-- **Quantitative habits** — optionally set a target + unit ("10 pages", "64 oz", "30 min") when adding a habit. Tapping the circle prompts for what you actually did and tracks progress toward the target. Partial-day progress shows as an amber pill; hitting target marks the day done.
-- **21-day inline trail** on every habit row — a smoothed 3-day intensity window so you can read the rhythm without opening anything.
-- **Per-habit detail view** (tap the row name or the › chevron): 12-month GitHub-style heatmap + 30-day rolling-7-day completion area chart + best-days weekday bars + 4 stats (current streak / best streak / total days / 30-day %). Rename / set target / delete all live here.
-- **3 themes**: cyan (default LED), pink (neon), mono (pure white LED) — tap a colored dot in the header.
-- **Hunter system** (Solo Leveling layer) — silent XP per habit + per streak milestone, level + E→S rank, status overlay with codename + XP bar, level-up popup.
-- **Adaptive headline** — `Run the list.` → `2 left.` → `Locked in.` based on today's progress.
-- **Single-file offline PWA.** Install to home screen, works on a plane.
-- **Local-only data.** Nothing leaves your device. No accounts.
+### Two habit modes
 
-## See it live
+| Mode | Use it for | How it works |
+|---|---|---|
+| **Yes / No** *(default)* | Simple daily checks — "Train", "Sleep by 12", "Meditate" | Tap the check circle = mark today done. Tap again = undo. |
+| **Quantitative** | Things you measure — "Drink 64 oz", "Read 20 pages", "Walk 10k steps" | Pick a unit when adding the habit. Tap the circle = adds **one step** toward the target (silently). When today's total crosses the target, the day marks done + streak ticks up. |
 
-> Hit the [**live demo**](https://zachwenger.github.io/pulse-habit-tracker/) on your phone. Add to home screen. Done.
+### Unit dropdown (when adding a habit)
 
-Three seed habits drop in on first run so the consistency trails aren't empty. Tap a row to mark today done, long-press for the per-habit graph. Reset anytime from the `?` menu.
+10 categorized presets, each with a smart default target + per-tap step:
+
+```
+Count    ·  reps          100 / +10
+Count    ·  pages         20  / +5
+Count    ·  steps         10000 / +1000
+Time     ·  min           30  / +5
+Time     ·  hrs           1   / +0.25
+Volume   ·  glasses       8   / +1
+Volume   ·  oz            64  / +8
+Volume   ·  ml            2000 / +250
+Distance ·  km            5   / +1
+Distance ·  mi            3   / +1
+```
+
+Pick a unit → a **Daily goal** card materializes with the target prefilled and editable + per-tap step preview + clear button.
+
+Skip the dropdown for a simple yes/no habit.
+
+### Per-habit visualization
+
+- **21-day inline trail** on every yes/no row — smoothed 3-day intensity window shows your rhythm at a glance without opening anything. Today cell outlined in the active theme color.
+- **Live progress bar** on every quantitative row — animated cyan-gradient bar fills as you tap. Pulses when target hits. Shows `24 / 64 oz` + `TAP +8 oz` hint inline.
+
+### Detail view (one tap)
+
+Tap the habit name OR the `›` chevron on the right of any row to open:
+
+- **Habit title** (rename via the **Rename** button top right)
+- **Target line** if it's a quantitative habit (e.g. `TARGET 64 oz / DAY`)
+- **4-stat grid**: Current streak / Best streak / Total days / 30-day %
+- **Best days** — 7-bar weekday consistency chart for the last 90 days. Peak weekday gets the bright accent.
+- **12-month heatmap** — GitHub-style 52×7 grid with 4 intensity bands + today outline + less→more legend
+- **30-day rolling-7-day completion area chart** — smoothed cyan line + glow + filled gradient
+- **Rename / Delete** buttons top right
+- **Esc** or the **←** back button closes
+
+### Themes
+
+Tap a colored dot in the header to switch the entire palette live:
+
+| Dot | Theme | Accent |
+|---|---|---|
+| 🔵 Cyan *(default)* | Electric LED blue | `#00e0ff` on `#020510` |
+| 🩷 Pink | Neon hot pink | `#ff3ea0` on `#0f0512` |
+| ⚪ Mono | Pure white LED | `#ffffff` on `#050505` |
+
+Selection persists. PWA `theme-color` meta updates live so your phone status bar tints with the chosen theme.
+
+### Hunter system (Solo Leveling layer)
+
+Silent gamification — doesn't interrupt the daily flow.
+
+- **XP per action** — habit check = `+10 XP`. Streak milestones layer on `+50` at 7 days, `+200` at 30, `+1000` at 100.
+- **Level system** — level `n` needs `floor(80 × n^1.5)` XP cumulative.
+- **Ranks** — `E` (LV 1–7) → `D` (8–14) → `C` (15–24) → `B` (25–39) → `A` (40–59) → `S` (60+).
+- **Codenames evolve with rank** — `Initiate` → `Steady Hand` → `Pattern Holder` → `Iron Will` → `Discipline Sage` → `Shadow Monarch`.
+- **Header pill** — always shows `E LV.5` (rank badge + level). Tap to open the full status overlay.
+- **Status overlay** — hexagonal rank badge, level + rank caption, codename, animated XP bar with shimmer, 3-stat grid (Total XP / Top streak / Days logged).
+- **Level-up popup** — fullscreen Solo Leveling-style system window with corner brackets, particle burst, haptic pattern, "Acknowledge" close. Rank-ups get a special "Hunter Rank Up" header.
+
+### Adaptive headline
+
+The hero text shifts based on today's progress:
+- No active habits → `Hold the line.`
+- Nothing done yet → `Run the list.`
+- Some done, some left → `N left.`
+- All done → `Locked in.`
+
+### About / intro overlay
+
+First-time visitors see a one-shot intro explaining the gestures. The `?` button next to the PULSE logo reopens it anytime. The intro also has a `Reset data` button that wipes localStorage.
+
+---
+
+## All interactions (reference)
+
+| Gesture | Where | Action |
+|---|---|---|
+| Tap | habit check circle | Mark today done (yes/no) OR add one step (quantitative) |
+| Tap | habit name / trail / `›` chevron | Open detail view (chart + stats + rename + delete) |
+| Tap | header `?` | Open the About / How-to intro |
+| Tap | theme dot | Switch the entire palette + status bar tint |
+| Tap | header rank pill | Open Hunter status overlay |
+| Tap | FAB `+` bottom-right | Focus the new-habit input |
+| Tap | unit dropdown | Pick a measurement unit when adding a habit |
+| Tap | goal card `×` | Clear the unit selection (back to yes/no) |
+| Tap | detail view `←` back | Close the detail |
+| **Shift-click** | habit check (quant) | Open custom-amount prompt (desktop) |
+| **Long-press 500ms** | habit check (quant) | Open custom-amount prompt (mobile) |
+| `Esc` | anywhere | Close the topmost overlay |
+| `Enter` | new-habit input | Add the habit |
+
+---
+
+## Streak math
+
+- **`streak(log)`** — consecutive days ending today (or yesterday if today not done — so a live streak doesn't read broken mid-day).
+- **`bestStreak(log)`** — walks the sorted log, returns longest consecutive run ever.
+- **`pct30(log)`** — unique done days in last 30, as percent.
+- **Heat intensity bands** (used on row trail, detail heatmap, weekday bars):
+  - `l4` — done today + 3 of the last 3 days were done (peak streak window)
+  - `l3` — done + 2 of last 3
+  - `l2` — done + 1 of last 3
+  - `l1` — not done today but recent activity in the window
+  - `(empty)` — no recent activity
+
+---
 
 ## Stack
 
@@ -43,26 +151,21 @@ Three seed habits drop in on first run so the consistency trails aren't empty. T
 |---|---|
 | Language | Vanilla HTML / CSS / JS — **no build step** |
 | Runtime | Browser + Service Worker |
-| Storage | `localStorage` |
-| Fonts | Inter (body) · Instrument Serif (display italic accents) · JetBrains Mono (numerics) |
-| Bundle | Single 24KB `index.html` |
-| Dependencies | None |
+| Storage | `localStorage` only — `pulse.*` namespace |
+| Fonts | Inter (body) · Space Grotesk (display) · JetBrains Mono (numerics + UI caps) |
+| Bundle | One ~28KB `index.html` + tiny SW + manifest + 1KB SVG icon |
+| Dependencies | None (Google Fonts loaded async) |
+| License | MIT |
 
-The whole point was to demonstrate that you don't need React + Tailwind + Vite + Vercel to ship something polished. The constraint is the design.
+Single-file is the point. No framework, no bundler, no env vars, no CI.
 
-## Design philosophy
-
-- **One accent color, used with discipline.** `#00e0ff` electric cyan on `#020510` near-black. No gradients fighting each other, no five-color icon system.
-- **Mobile-first.** 520px max container, 16px base font, 36px tap targets, ADHD-friendly hierarchy.
-- **Motion as status, not decoration.** Animations communicate state changes (200–500ms windows), nothing loops for the sake of looping.
-- **Adaptive language.** Headlines, streak captions, and the day-meta pill all shift based on real state.
-- **HUD aesthetic.** Corner brackets at viewport edges, scanline overlay, mono caps for system metadata, serif for the human-readable headlines.
+---
 
 ## Run locally
 
 ```bash
 git clone https://github.com/zachwenger/pulse-habit-tracker.git
-cd pulse
+cd pulse-habit-tracker
 python -m http.server 5052
 ```
 
@@ -70,53 +173,69 @@ Open `http://localhost:5052`.
 
 ## Install on phone
 
-1. Open the [live URL](https://zachwenger.github.io/pulse-habit-tracker/) on your phone (Safari iOS or Chrome Android)
+1. Open the [live URL](https://zachwenger.github.io/pulse-habit-tracker/) in mobile Safari or Chrome
 2. Share menu → **Add to Home Screen**
-3. Opens fullscreen, works offline, syncs nothing
+3. Opens fullscreen, works offline. Same standalone PWA experience as a native app.
+
+---
 
 ## File structure
 
 ```
-pulse/
+pulse-habit-tracker/
 ├── index.html        — entire app (HTML + CSS + JS)
-├── manifest.json     — PWA install metadata
-├── service-worker.js — offline cache (network-first w/ fallback)
-├── icon.svg          — pulse-line app icon
+├── manifest.json     — PWA install metadata (name, theme color, icon)
+├── service-worker.js — offline cache (network-first w/ fallback to cache)
+├── icon.svg          — pulse-line app icon (cyan SVG with glow)
 ├── README.md         — this file
 ├── LICENSE           — MIT
-└── CLAUDE.md         — project notes for AI pair-programming
+├── CLAUDE.md         — project notes for AI pair-programming
+└── .gitignore
 ```
+
+---
 
 ## Privacy
 
-All data lives in `localStorage` on your device. There is no server, no telemetry, no analytics. Same URL on two devices = independent data on each.
+All data lives in `localStorage` on your device under the `pulse.*` namespace. No server, no telemetry, no analytics, no accounts. Same URL on two devices = independent log on each.
 
-To back up: DevTools → Application → Local Storage → copy the `pulse.habits` JSON.
+**Back up:** DevTools → Application → Local Storage → copy the `pulse.habits` and `pulse.xp` JSON values.
 
-To reset: open the **?** in the header → **Reset data**.
+**Reset everything:** Open the `?` → **Reset data** button.
+
+---
 
 ## Roadmap
 
-Possible next, not commitments:
+Possible next moves — not commitments:
 
-- [ ] Per-habit categories with color tagging
-- [ ] Weekly recap PNG export (share to socials)
-- [ ] Optional local reminder notifications (PWA push)
-- [ ] CSV / JSON export + import
-- [ ] Custom heatmap intensity windows
-- [ ] Themes (the current cyan stays default)
+- [ ] **Negative habits** (track *not* doing something — clean streak)
+- [ ] **Per-habit color** (each habit picks one of 6 sub-colors)
+- [ ] **Quality rating on check** (1-tap good day / neutral / bad day)
+- [ ] **Time-of-day grouping** (auto-sort into Morning / Afternoon / Evening)
+- [ ] **"Why" note per habit** (small line under the name explaining motivation)
+- [ ] **Cross-habit correlation insights** (e.g. "you hit your reading goal 87% of the time when you also sleep by 12")
+- [ ] **Streak insurance** (designate N rest days/month that don't break streak)
+- [ ] **Year-in-review PNG export** (annual share card)
+- [ ] **CSV / JSON export + import**
+- [ ] **Optional reminder notifications** (PWA push)
+
+---
 
 ## Forking this
 
-This is structured as a **baseline template** anyone can fork:
+This is structured as a **baseline template**:
 
 1. Fork the repo
-2. Update `manifest.json` (name + short_name)
-3. Edit the `:root` CSS variables to pick your own single-color theme
+2. Update `manifest.json` (`name`, `short_name`, `theme_color`)
+3. Edit the `:root` CSS variables to pick your accent (`--cy`, `--cy-hi`, `--cy-dim`, `--cy-rgb`, `--cy-hi-rgb`, `--bg`) — or add a new theme block
 4. Replace the seed habits in `index.html` (search for `Train or move`)
-5. Push to GitHub, enable Pages
+5. Optionally trim the `UNIT_PRESETS` list to just the units you care about
+6. Push to GitHub, enable Pages
 
 That's the whole deploy. No CI, no build, no env vars.
+
+---
 
 ## License
 
@@ -126,6 +245,6 @@ That's the whole deploy. No CI, no build, no env vars.
 
 <div align="center">
 
-Built by [Zach Wenger](https://github.com/zachwenger) · [zachwenger.dev@gmail.com](mailto:zachwenger.dev@gmail.com) · [Portfolio](https://zachwenger.github.io/portfolio/)
+Built by [Zach Wenger](https://github.com/zachwenger) · [zachwenger.dev@gmail.com](mailto:zachwenger.dev@gmail.com)
 
 </div>
