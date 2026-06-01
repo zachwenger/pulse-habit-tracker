@@ -27,12 +27,32 @@ Open on your phone → Share menu → **Add to Home Screen** → installs as a r
 
 ## Features
 
-### Two habit modes
+### Habit modes
 
 | Mode | Use it for | How it works |
 |---|---|---|
 | **Yes / No** *(default)* | Simple daily checks — "Train", "Sleep by 12", "Meditate" | Tap the check circle = mark today done. Tap again = undo. |
 | **Quantitative** | Things you measure — "Drink 64 oz", "Read 20 pages", "Walk 10k steps" | Pick a unit when adding the habit. Tap the circle = adds **one step** toward the target (silently). When today's total crosses the target, the day marks done + streak ticks up. |
+| **Negative** ("Avoid it") | Things you're trying to *not* do — "Phone in bed", "Soda", "Doomscroll" | Pick "Avoid it" when adding the habit. Tap the circle = "I stayed clean today". Streak label flips to **"Xd clean"**. Row gets a red border accent + cyan→green check on success, red glow if broken. |
+
+### Time-of-day groups
+
+Every habit gets assigned to a group when you add it — **Morning**, **Afternoon**, **Evening**, or **Anytime**. The home screen auto-sorts habits under section headers (`MORNING · 2`, `EVENING · 3`, `ANYTIME · 1`). Skips empty groups. Removes mental load — no manual reorder.
+
+### Per-habit color
+
+Each habit can pick its own accent from a 6-color palette: **cyan · pink · lime · amber · violet · rose**. The check circle, progress bar, intensity trail, and detail-view glow all use that habit's color. The active theme still controls the overall vibe (background, header, hunter pill) — habits just tag with their personal accent.
+
+### Reminder notifications
+
+Tap the **bell icon** next to any time-of-day group header to enable PWA push notifications for that slot. Default reminder hours: **Morning 8:00 · Afternoon 13:00 · Evening 19:00**.
+
+- First time → prompts for browser notification permission
+- When the hour hits, a notification fires: `PULSE — Morning · 2 habits waiting: Train, Read…`
+- Tapping the notification focuses (or opens) the app
+- Dedup'd per day so it never fires twice
+- Background notifications require the PWA installed to home screen (Chrome / Edge / Safari iOS 16.4+)
+- A subtle "Enable reminders" banner appears once if you haven't dismissed it
 
 ### Unit dropdown (when adding a habit)
 
@@ -123,6 +143,11 @@ First-time visitors see a one-shot intro explaining the gestures. The `?` button
 | Tap | FAB `+` bottom-right | Focus the new-habit input |
 | Tap | unit dropdown | Pick a measurement unit when adding a habit |
 | Tap | goal card `×` | Clear the unit selection (back to yes/no) |
+| Tap | tod pills (Morning/etc.) | Assign new habit to a time-of-day group |
+| Tap | polarity pills (Do it / Avoid it) | Switch new habit to negative tracking |
+| Tap | color swatch | Pick a per-habit accent color |
+| Tap | bell next to group header | Toggle reminder notifications for that group |
+| Tap | notification banner | Grant notification permission + enable all 3 groups |
 | Tap | detail view `←` back | Close the detail |
 | **Shift-click** | habit check (quant) | Open custom-amount prompt (desktop) |
 | **Long-press 500ms** | habit check (quant) | Open custom-amount prompt (mobile) |
@@ -209,16 +234,16 @@ All data lives in `localStorage` on your device under the `pulse.*` namespace. N
 
 Possible next moves — not commitments:
 
-- [ ] **Negative habits** (track *not* doing something — clean streak)
-- [ ] **Per-habit color** (each habit picks one of 6 sub-colors)
+- [x] **Negative habits** ✓
+- [x] **Per-habit color** ✓
+- [x] **Time-of-day grouping** ✓
+- [x] **Reminder notifications** ✓ (per-group bell toggles, foreground tick fires + SW notificationclick focuses app)
 - [ ] **Quality rating on check** (1-tap good day / neutral / bad day)
-- [ ] **Time-of-day grouping** (auto-sort into Morning / Afternoon / Evening)
 - [ ] **"Why" note per habit** (small line under the name explaining motivation)
 - [ ] **Cross-habit correlation insights** (e.g. "you hit your reading goal 87% of the time when you also sleep by 12")
 - [ ] **Streak insurance** (designate N rest days/month that don't break streak)
 - [ ] **Year-in-review PNG export** (annual share card)
 - [ ] **CSV / JSON export + import**
-- [ ] **Optional reminder notifications** (PWA push)
 
 ---
 
