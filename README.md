@@ -41,7 +41,14 @@ Every habit gets assigned to a group when you add it — **Morning**, **Afternoo
 
 ### Per-habit color
 
-Each habit can pick its own accent from a 6-color palette: **cyan · pink · lime · amber · violet · rose**. The check circle, progress bar, intensity trail, and detail-view glow all use that habit's color. The active theme still controls the overall vibe (background, header, hunter pill) — habits just tag with their personal accent.
+Each habit picks its own accent. Two ways:
+
+- **6-color preset palette**: cyan · pink · lime · amber · violet · rose
+- **Custom hex** via the `+` swatch — opens a panel with a native color picker (with hue/saturation/brightness) + a hex text input. Any valid `#rrggbb` works. Picker and text input sync live.
+
+The check circle, progress bar, intensity trail, and detail-view glow all use that habit's color. The active theme still controls the overall vibe (background, header, hunter pill) — habits just tag with their personal accent.
+
+Recoloring an existing habit: tap the `›` chevron → detail view → **Habit color** card. Same picker, applies instantly. The home list re-renders with the new color the moment you pick.
 
 ### Reminder notifications
 
@@ -234,7 +241,9 @@ First-time visitors hit the **Awakening** flow (welcome → class picker). After
 | Tap | goal card `×` | Clear the unit selection (back to yes/no) |
 | Tap | tod pills (Morning/etc.) | Assign new habit to a time-of-day group |
 | Tap | polarity pills (Do it / Avoid it) | Switch new habit to negative tracking |
-| Tap | color swatch | Pick a per-habit accent color |
+| Tap | color swatch | Pick a per-habit accent color (preset) |
+| Tap | color swatch `+` | Open the custom hex picker (native color picker + hex input) |
+| Tap | detail view → Habit color | Recolor an existing habit (preset or custom hex) |
 | Tap | bell next to group header | Toggle reminder notifications for that group |
 | Tap | notification banner | Grant notification permission + enable all 3 groups |
 | Tap | detail view `←` back | Close the detail |

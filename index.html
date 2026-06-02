@@ -566,6 +566,54 @@
   .color-swatch[data-c="violet"] { color: #a76bff; background: radial-gradient(circle, #caa3ff, #a76bff); }
   .color-swatch[data-c="rose"]   { color: #ff6b6b; background: radial-gradient(circle, #ff9e9e, #ff6b6b); }
 
+  /* Custom hex swatch — conic rainbow disc with "+" overlay */
+  .color-swatch.custom-trigger {
+    background: conic-gradient(from 0deg,
+      #ff6b6b, #ffb547, #b4ff5e, #5eff89,
+      #5eecff, #5e89ff, #a76bff, #ff5ec8, #ff6b6b);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--f-mono); font-size: 14px; font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+    line-height: 1; padding-bottom: 2px;
+  }
+  .color-swatch.custom-trigger.active { box-shadow: 0 0 12px currentColor; }
+
+  /* Custom-color panel — appears below the swatch row when "+" is tapped */
+  .custom-color-panel {
+    display: none; gap: 8px; align-items: center; margin-top: 8px;
+    padding: 10px 12px; border-radius: 10px;
+    background: rgba(255,255,255,0.02); border: 1px solid var(--line);
+    animation: dropIn .2s cubic-bezier(.4,0,.2,1);
+  }
+  .custom-color-panel.show { display: flex; }
+  .custom-color-panel .lab { font-family: var(--f-mono); font-size: 10px;
+    letter-spacing: 2px; color: var(--fg-4); text-transform: uppercase; }
+  .ccp-color {
+    width: 36px; height: 36px; padding: 0; border-radius: 50%;
+    border: 1.5px solid var(--line); cursor: pointer; outline: none;
+    background: transparent; flex-shrink: 0;
+    transition: border-color .2s, transform .2s;
+  }
+  .ccp-color:hover { border-color: var(--cy); transform: scale(1.05); }
+  .ccp-color::-webkit-color-swatch-wrapper { padding: 0; }
+  .ccp-color::-webkit-color-swatch { border: none; border-radius: 50%; }
+  .ccp-color::-moz-color-swatch { border: none; border-radius: 50%; }
+  .ccp-hex {
+    flex: 1; padding: 9px 12px; border-radius: 8px;
+    background: rgba(255,255,255,0.04); border: 1px solid var(--line);
+    color: var(--fg); font-family: var(--f-mono); font-size: 13px; outline: none;
+    letter-spacing: 1px; text-transform: lowercase;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .ccp-hex:focus { border-color: var(--cy);
+    box-shadow: 0 0 0 3px rgba(var(--cy-rgb), 0.15); }
+  .ccp-hex.invalid { border-color: var(--danger);
+    box-shadow: 0 0 0 3px rgba(255,68,119,0.15); }
+  .ccp-preview { width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+    border: 1.5px solid rgba(255,255,255,0.2);
+    box-shadow: 0 0 10px currentColor; }
+
   /* ── ADD-OPTIONS row (tod buttons + polarity toggle) ── */
   .add-opts { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; align-items: center; }
   .opt-group { display: flex; gap: 4px; padding: 4px;
@@ -1192,6 +1240,13 @@
         <span class="color-swatch" data-c="amber"></span>
         <span class="color-swatch" data-c="violet"></span>
         <span class="color-swatch" data-c="rose"></span>
+        <span class="color-swatch custom-trigger" data-c="custom" title="Pick a custom color">+</span>
+      </div>
+      <div class="custom-color-panel" id="custom-color-panel">
+        <span class="lab">Hex</span>
+        <input type="color" class="ccp-color" id="ccp-color" value="#00e0ff">
+        <input type="text" class="ccp-hex" id="ccp-hex" value="#00e0ff" maxlength="7" autocomplete="off" spellcheck="false">
+        <span class="ccp-preview" id="ccp-preview" style="background:#00e0ff;color:#00e0ff"></span>
       </div>
     </div>
     <div class="notif-banner" id="notif-banner">
@@ -1226,6 +1281,26 @@
         <div class="chain-head">Quest chain · habit stacking</div>
         <select id="chain-select"><option value="">— No chain set —</option></select>
         <div class="chain-hint">After this habit · the chained one will highlight + scroll into view</div>
+      </div>
+
+      <div class="chain-card" id="d-color-card">
+        <div class="chain-head">Habit color</div>
+        <div class="color-row" id="d-color-row" style="background:none;border:none;padding:0;margin:0">
+          <span class="color-swatch" data-c="cyan"></span>
+          <span class="color-swatch" data-c="pink"></span>
+          <span class="color-swatch" data-c="lime"></span>
+          <span class="color-swatch" data-c="amber"></span>
+          <span class="color-swatch" data-c="violet"></span>
+          <span class="color-swatch" data-c="rose"></span>
+          <span class="color-swatch custom-trigger" data-c="custom" title="Pick a custom color">+</span>
+        </div>
+        <div class="custom-color-panel" id="d-custom-color-panel">
+          <span class="lab">Hex</span>
+          <input type="color" class="ccp-color" id="d-ccp-color" value="#00e0ff">
+          <input type="text" class="ccp-hex" id="d-ccp-hex" value="#00e0ff" maxlength="7" autocomplete="off" spellcheck="false">
+          <span class="ccp-preview" id="d-ccp-preview" style="background:#00e0ff;color:#00e0ff"></span>
+        </div>
+        <div class="chain-hint">Tap a preset · or the <b>+</b> for a custom hex</div>
       </div>
 
       <div class="recov-card" id="recov-card">
@@ -1463,7 +1538,7 @@
       }
     }
     h.qty = cleanQty;
-    h.color = ['cyan','pink','lime','amber','violet','rose'].includes(h.color) ? h.color : 'cyan';
+    h.color = safeColor(h.color);
     h.tod = ['morning','afternoon','evening','anytime'].includes(h.tod) ? h.tod : 'anytime';
     h.polarity = (h.polarity === 'neg') ? 'neg' : 'pos';
     h.quality = (h.quality && typeof h.quality === 'object') ? h.quality : {};
@@ -1515,9 +1590,44 @@
     violet: { cy: '#a76bff', hi: '#caa3ff', dim: '#553e8e', rgb: '167,107,255', hiRgb: '202,163,255' },
     rose:   { cy: '#ff6b6b', hi: '#ff9e9e', dim: '#8a2c2c', rgb: '255,107,107', hiRgb: '255,158,158' },
   };
+  // Hex color helpers — derive the full {cy, hi, dim, rgb, hiRgb} bundle
+  // from a single hex so users can pick any custom color and get the
+  // same gradient + glow + dim treatment as the named presets.
+  const HEX_RE = /^#[0-9a-f]{6}$/i;
+  function hexToRgb(hex) {
+    const m = hex.match(/^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
+    return m ? [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)] : null;
+  }
+  function rgbToHex([r, g, b]) {
+    return '#' + [r, g, b].map(c => Math.max(0, Math.min(255, c)).toString(16).padStart(2, '0')).join('');
+  }
+  function mixRgb(rgb, target, amt) {
+    return rgb.map((c, i) => Math.round(c + (target[i] - c) * amt));
+  }
+  function deriveFromHex(hex) {
+    const rgb = hexToRgb(hex); if (!rgb) return null;
+    const hiRgb = mixRgb(rgb, [255, 255, 255], 0.4);
+    const dimRgb = mixRgb(rgb, [0, 0, 0], 0.55);
+    return {
+      cy: hex.toLowerCase(),
+      hi: rgbToHex(hiRgb),
+      dim: rgbToHex(dimRgb),
+      rgb: rgb.join(','),
+      hiRgb: hiRgb.join(','),
+    };
+  }
   function colorStyle(k) {
-    const c = COLORS[k] || COLORS.cyan;
+    let c;
+    if (typeof k === 'string' && HEX_RE.test(k)) c = deriveFromHex(k);
+    else c = COLORS[k] || COLORS.cyan;
     return `--cy:${c.cy};--cy-hi:${c.hi};--cy-dim:${c.dim};--cy-rgb:${c.rgb};--cy-hi-rgb:${c.hiRgb}`;
+  }
+  // Accept either a named preset OR a 6-char hex. Anything else → cyan.
+  function safeColor(c) {
+    if (typeof c !== 'string') return 'cyan';
+    if (['cyan','pink','lime','amber','violet','rose'].includes(c)) return c;
+    if (HEX_RE.test(c)) return c.toLowerCase();
+    return 'cyan';
   }
 
   // Time-of-day groups with default reminder hours
@@ -1947,11 +2057,76 @@
     currentPol = b.dataset.pol;
     document.querySelectorAll('#opt-polarity .opt-pill').forEach(x => x.classList.toggle('active', x === b));
   });
-  document.getElementById('color-row').addEventListener('click', e => {
-    const s = e.target.closest('.color-swatch'); if (!s) return;
-    currentColor = s.dataset.c;
-    document.querySelectorAll('#color-row .color-swatch').forEach(x => x.classList.toggle('active', x === s));
-  });
+  /* ===== Reusable hex-color picker glue =====
+     `bindColorPicker` wires a swatch row + a hidden custom panel to a
+     callback that fires whenever the picked color changes. The same
+     code drives the add-row picker AND the detail-view picker.       */
+  function bindColorPicker(rowEl, panelEl, colorInputEl, hexInputEl, previewEl, onChange) {
+    function setPreview(hex) {
+      previewEl.style.background = hex;
+      previewEl.style.color = hex;
+    }
+    function showCustom() { panelEl.classList.add('show'); }
+    function hideCustom() { panelEl.classList.remove('show'); }
+    rowEl.addEventListener('click', e => {
+      const s = e.target.closest('.color-swatch'); if (!s) return;
+      const c = s.dataset.c;
+      rowEl.querySelectorAll('.color-swatch').forEach(x => x.classList.toggle('active', x === s));
+      if (c === 'custom') {
+        showCustom();
+        const cur = hexInputEl.value && HEX_RE.test(hexInputEl.value) ? hexInputEl.value : '#00e0ff';
+        colorInputEl.value = cur;
+        setPreview(cur);
+        onChange(cur);
+      } else {
+        hideCustom();
+        onChange(c);
+      }
+    });
+    colorInputEl.addEventListener('input', e => {
+      const hex = e.target.value;
+      hexInputEl.value = hex;
+      hexInputEl.classList.remove('invalid');
+      setPreview(hex);
+      onChange(hex);
+    });
+    hexInputEl.addEventListener('input', e => {
+      let v = e.target.value.trim();
+      if (v && !v.startsWith('#')) { v = '#' + v; e.target.value = v; }
+      if (HEX_RE.test(v)) {
+        hexInputEl.classList.remove('invalid');
+        colorInputEl.value = v;
+        setPreview(v);
+        onChange(v);
+      } else if (v.length >= 4) {
+        hexInputEl.classList.add('invalid');
+      }
+    });
+    // Programmatically select a swatch (used when restoring detail-view state)
+    return function selectSwatch(value) {
+      const isHex = typeof value === 'string' && HEX_RE.test(value);
+      const target = isHex ? 'custom' : value;
+      rowEl.querySelectorAll('.color-swatch').forEach(x => x.classList.toggle('active', x.dataset.c === target));
+      if (isHex) {
+        hexInputEl.value = value;
+        colorInputEl.value = value;
+        setPreview(value);
+        showCustom();
+      } else {
+        hideCustom();
+      }
+    };
+  }
+
+  // Add-row picker
+  const addRowSelectSwatch = bindColorPicker(
+    document.getElementById('color-row'),
+    document.getElementById('custom-color-panel'),
+    document.getElementById('ccp-color'),
+    document.getElementById('ccp-hex'),
+    document.getElementById('ccp-preview'),
+    val => { currentColor = val; }
+  );
 
   function addHabit() {
     const v = safeStr(addInput.value, HARD_LIMITS.NAME_LEN); if (!v) return;
@@ -1966,13 +2141,14 @@
       : 0;
     const step = preset.step || (target > 0 ? Math.max(1, Math.round(target / 8)) : 0);
     // Validate option-pill state before save (defense vs DOM tampering)
-    const color = ['cyan','pink','lime','amber','violet','rose'].includes(currentColor) ? currentColor : 'cyan';
+    const color = safeColor(currentColor);
     const tod = ['morning','afternoon','evening','anytime'].includes(currentTod) ? currentTod : 'anytime';
     const polarity = (currentPol === 'neg') ? 'neg' : 'pos';
     habits.push({
       id: uid(), name: v, log: [], created: Date.now(),
       target, unit: currentUnitKey, step, qty: {},
       color, tod, polarity, quality: {},
+      chain: null, misses: {},
     });
     Store.set('habits', habits);
     addInput.value = '';
@@ -2029,6 +2205,7 @@
     renderDoW(h.log);
     renderChainPicker(h);
     renderRecovery(h);
+    renderDetailColor(h);
     // stagger fade-in heatmap cells (wave effect)
     requestAnimationFrame(() => {
       const cells = document.querySelectorAll('#heat .heat-cell');
@@ -2039,6 +2216,22 @@
     detail.classList.add('open');
     document.body.style.overflow = 'hidden';
   }
+
+  /* ===== Detail-view color picker (edit existing habit's color) ===== */
+  const detailSelectSwatch = bindColorPicker(
+    document.getElementById('d-color-row'),
+    document.getElementById('d-custom-color-panel'),
+    document.getElementById('d-ccp-color'),
+    document.getElementById('d-ccp-hex'),
+    document.getElementById('d-ccp-preview'),
+    val => {
+      const h = habits.find(x => x.id === detailId); if (!h) return;
+      h.color = safeColor(val);
+      Store.set('habits', habits);
+      renderList(); // re-render so the row picks up the new color
+    }
+  );
+  function renderDetailColor(h) { detailSelectSwatch(h.color); }
 
   /* ===== Chain picker (habit stacking) ===== */
   function renderChainPicker(h) {
@@ -2070,6 +2263,7 @@
   function renderRecovery(h) {
     const list = document.getElementById('recov-list');
     document.getElementById('recov-wis').textContent = getWisdom().toLocaleString();
+    if (!h.misses || typeof h.misses !== 'object') h.misses = {};
     const entries = Object.entries(h.misses).sort((a,b) => b[0].localeCompare(a[0])).slice(0, 8);
     if (!entries.length) {
       list.innerHTML = `<div class="recov-empty">No misses logged. Every Hunter falls — log it when it happens.</div>`;
