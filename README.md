@@ -112,10 +112,62 @@ Silent gamification — doesn't interrupt the daily flow.
 - **XP per action** — habit check = `+10 XP`. Streak milestones layer on `+50` at 7 days, `+200` at 30, `+1000` at 100.
 - **Level system** — level `n` needs `floor(80 × n^1.5)` XP cumulative.
 - **Ranks** — `E` (LV 1–7) → `D` (8–14) → `C` (15–24) → `B` (25–39) → `A` (40–59) → `S` (60+).
-- **Codenames evolve with rank** — `Initiate` → `Steady Hand` → `Pattern Holder` → `Iron Will` → `Discipline Sage` → `Shadow Monarch`.
+- **Codenames evolve with rank OR class** — base codenames: `Initiate` → `Steady Hand` → `Pattern Holder` → `Iron Will` → `Discipline Sage` → `Shadow Monarch`. If you pick a class during the Awakening, its codename overrides (`The Maker`, `Iron Body`, `Mind Forge`, etc.).
 - **Header pill** — always shows `E LV.5` (rank badge + level). Tap to open the full status overlay.
-- **Status overlay** — hexagonal rank badge, level + rank caption, codename, animated XP bar with shimmer, 3-stat grid (Total XP / Top streak / Days logged).
+- **Status overlay** — hexagonal rank badge, level + rank caption, codename, animated XP bar with shimmer, 6-stat grid (Total XP / Top streak / Days logged / Rest tokens / Wisdom / Class).
 - **Level-up popup** — fullscreen Solo Leveling-style system window with corner brackets, particle burst, haptic pattern, "Acknowledge" close. Rank-ups get a special "Hunter Rank Up" header.
+
+### Awakening (first launch)
+
+PULSE's onboarding isn't a tutorial — it's a class pick. Two-step flow:
+
+1. **System Notice** — what the app is + the gestures
+2. **Choose Class** — six options. Each is a *starter habit pack* + a *codename* that shows up in Hunter Status. Picking a class auto-seeds 3 habits already chained as quest chains so you can see how it feels:
+
+| Class | Codename | Vibe | Starter habits |
+|---|---|---|---|
+| Warrior | Iron Body | Train, sleep, eat | Train or move · Sleep 8h · Drink water |
+| Scholar | Mind Forge | Read, write, learn | Read · Deep work · Journal |
+| Monk | Stillness | Subtract noise | Meditate · Phone in bed *(neg)* · Walk outside |
+| Builder | The Maker | Ship daily | Ship something · Learn one thing · Doomscroll *(neg)* |
+| Athlete | Edge Runner | Cardio + lifts | Steps · Lift · Stretch |
+| Free | Wanderer | DIY from zero | *(none seeded)* |
+
+Class is cosmetic — it doesn't lock any feature. You can delete, rename, or add anything afterward.
+
+### Quest chains (habit stacking)
+
+Atomic Habits framing of "after I do X, I will do Y" — but in PULSE's UI, not a worksheet.
+
+- Each habit has an optional **chain** field pointing to another habit
+- When you check off habit A, if it's chained to habit B:
+  - The screen scrolls B into view
+  - B gets a 2.2s cyan pulse-glow + border highlight
+  - A toast fires: `Next quest · <B>`
+- Edit the chain from any habit's detail view — single dropdown listing every other habit
+- Class-seeded starter habits come pre-chained (e.g. Warrior: Train → Sleep → Water)
+- Orphan chain references (chain pointing to a deleted habit) are stripped on load
+
+### Recovery log (Wisdom)
+
+Missing a day isn't a failure — it's data. PULSE turns it into a stat.
+
+- **Detail view → Recovery log** card shows your last 8 logged misses for that habit + total Wisdom
+- Tap **+ Log a miss** → modal with 6 reason chips (Travel / Sick / Too tired / Too busy / Forgot / Chose not to) + optional 300-char note
+- Logging a miss awards **+1 Wisdom** (a separate counter from XP)
+- Wisdom shows in Hunter Status alongside XP and tokens
+- Each miss is timestamped (`YYYY-MM-DD`) and stored on the habit under `h.misses`
+
+### Rest tokens (streak insurance)
+
+Solo Leveling's healing potions, but for streaks.
+
+- Earn **+1 Rest Token** every time any habit hits a **7-day** streak. `+2` at 30, `+5` at 100.
+- When logging a miss on a habit with an active streak, the miss modal shows a "Spend 1 Rest Token to keep your streak alive" checkbox if you have any.
+- Checked → the day silently logs as done (streak preserved), token count decrements, recovery entry is marked `· token spent`.
+- Stored on `pulse.hunter.tokens`. Shown in Hunter Status.
+
+Why this works: tokens reward consistency *and* defend it. A 30-day streak isn't a fragile glass cannon you have to nurse — it's a position you've earned the right to defend.
 
 ### Adaptive headline
 
@@ -159,7 +211,7 @@ The HTML itself is fetched **network-first** (with `cache: 'no-store'`) so even 
 
 ### About / intro overlay
 
-First-time visitors see a one-shot intro explaining the gestures. The `?` button next to the PULSE logo reopens it anytime. The intro also has a `Reset data` button that wipes localStorage.
+First-time visitors hit the **Awakening** flow (welcome → class picker). After that, the `?` button next to the PULSE logo reopens the welcome panel anytime (no class re-pick). The welcome panel also has a `Reset data` button that wipes localStorage.
 
 ---
 
@@ -172,6 +224,11 @@ First-time visitors see a one-shot intro explaining the gestures. The `?` button
 | Tap | header `?` | Open the About / How-to intro |
 | Tap | theme dot | Switch the entire palette + status bar tint |
 | Tap | header rank pill | Open Hunter status overlay |
+| Tap | detail view → chain dropdown | Set the quest-chain target (or clear it) |
+| Tap | detail view → `+ Log a miss` | Open the Recovery Log modal |
+| Tap | miss-modal reason chip | Tag the reason (Travel / Sick / Tired / etc.) |
+| Tap | miss-modal token checkbox | Spend 1 Rest Token to preserve the streak |
+| Tap | class card (Awakening) | Pick your class — confirms seeds 3 starter habits |
 | Tap | FAB `+` bottom-right | Focus the new-habit input |
 | Tap | unit dropdown | Pick a measurement unit when adding a habit |
 | Tap | goal card `×` | Clear the unit selection (back to yes/no) |
@@ -286,10 +343,13 @@ Possible next moves — not commitments:
 - [x] **Per-habit color** ✓
 - [x] **Time-of-day grouping** ✓
 - [x] **Reminder notifications** ✓ (per-group bell toggles, foreground tick fires + SW notificationclick focuses app)
+- [x] **Awakening / Class picker onboarding** ✓ (six classes, each with a starter pack + codename)
+- [x] **Quest chains (habit stacking)** ✓ (chain habit B to A, B glows when A completes)
+- [x] **Recovery log + Wisdom** ✓ (log misses with reason + note, accrues Wisdom stat)
+- [x] **Streak insurance — Rest Tokens** ✓ (earn at 7/30/100-day streaks, spend on a miss)
 - [ ] **Quality rating on check** (1-tap good day / neutral / bad day)
 - [ ] **"Why" note per habit** (small line under the name explaining motivation)
 - [ ] **Cross-habit correlation insights** (e.g. "you hit your reading goal 87% of the time when you also sleep by 12")
-- [ ] **Streak insurance** (designate N rest days/month that don't break streak)
 - [ ] **Year-in-review PNG export** (annual share card)
 - [ ] **CSV / JSON export + import**
 

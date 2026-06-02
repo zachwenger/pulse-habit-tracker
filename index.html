@@ -951,6 +951,155 @@
   .theme-dot[data-t="pink"] { color: #ff3ea0; background: radial-gradient(circle, #ff89c8, #ff3ea0); }
   .theme-dot[data-t="mono"] { color: #fff; background: radial-gradient(circle, #fff, #888); }
 
+  /* ── AWAKENING (class picker on first launch) ── */
+  .awaken-step { display: none; }
+  .awaken-step.show { display: block; animation: dropIn .25s cubic-bezier(.4,0,.2,1); }
+  .class-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 18px; }
+  .class-card { padding: 14px 12px; border-radius: 12px; cursor: pointer;
+    background: rgba(255,255,255,0.02); border: 1px solid var(--line);
+    transition: all .2s; text-align: left; }
+  .class-card:hover { border-color: var(--cy); background: rgba(var(--cy-rgb), 0.06);
+    transform: translateY(-1px); }
+  .class-card.sel { border-color: var(--cy); background: rgba(var(--cy-rgb), 0.1);
+    box-shadow: 0 0 16px -4px rgba(var(--cy-rgb), 0.4); }
+  .class-name { font-family: var(--f-display); font-weight: 700; font-size: 16px;
+    color: var(--fg); letter-spacing: -.3px; margin-bottom: 4px; }
+  .class-card.sel .class-name { color: var(--cy-hi); }
+  .class-codename { font-family: var(--f-mono); font-size: 9px; letter-spacing: 2px;
+    color: var(--cy); text-transform: uppercase; margin-bottom: 8px; }
+  .class-starters { font-size: 11px; color: var(--fg-3); line-height: 1.5; }
+  .awaken-title-tag { font-family: var(--f-mono); font-size: 9px; letter-spacing: 3px;
+    color: var(--fg-4); text-transform: uppercase; margin-top: 4px; }
+
+  /* ── QUEST CHAIN HIGHLIGHT (when a chained habit fires) ── */
+  .habit.chained-glow {
+    animation: chainGlow 2.2s cubic-bezier(.4,0,.2,1);
+    border-color: var(--cy) !important;
+  }
+  @keyframes chainGlow {
+    0%   { box-shadow: 0 0 0 0 rgba(var(--cy-rgb), 0); transform: scale(1); }
+    15%  { box-shadow: 0 0 28px 4px rgba(var(--cy-rgb), 0.6),
+                       0 0 0 1px rgba(var(--cy-rgb), 0.4) inset; transform: scale(1.015); }
+    100% { box-shadow: 0 0 0 0 rgba(var(--cy-rgb), 0); transform: scale(1); }
+  }
+
+  /* ── CHAIN PICKER (detail view) ── */
+  .chain-card { padding: 14px 16px; border-radius: 12px;
+    background: linear-gradient(180deg, rgba(13,18,40,0.6), rgba(8,12,28,0.6));
+    border: 1px solid var(--line); margin-bottom: 18px; }
+  .chain-card .chain-head { font-family: var(--f-mono); font-size: 10px; letter-spacing: 3px;
+    color: var(--fg-4); text-transform: uppercase; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 8px; }
+  .chain-card .chain-head::before { content:''; width: 5px; height: 5px;
+    background: var(--cy); border-radius: 50%; box-shadow: var(--cy-glow); }
+  .chain-card select {
+    width: 100%; padding: 10px 12px; border-radius: 10px;
+    background: rgba(255,255,255,0.025); border: 1px solid var(--line);
+    color: var(--fg); font-family: inherit; font-size: 14px; outline: none;
+    cursor: pointer; transition: border-color .2s;
+    -webkit-appearance: none; -moz-appearance: none; appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, var(--cy) 50%),
+                      linear-gradient(135deg, var(--cy) 50%, transparent 50%);
+    background-position: calc(100% - 16px) center, calc(100% - 11px) center;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+    padding-right: 32px;
+  }
+  .chain-card select:focus { border-color: var(--cy);
+    box-shadow: 0 0 0 3px rgba(var(--cy-rgb), 0.15); }
+  .chain-hint { font-family: var(--f-mono); font-size: 9px; letter-spacing: 2px;
+    color: var(--fg-5); text-transform: uppercase; margin-top: 8px; }
+
+  /* ── RECOVERY LOG (detail view + miss modal) ── */
+  .recov-card { padding: 14px 16px; border-radius: 12px;
+    background: linear-gradient(180deg, rgba(13,18,40,0.6), rgba(8,12,28,0.6));
+    border: 1px solid var(--line); margin-bottom: 18px; }
+  .recov-head { font-family: var(--f-mono); font-size: 10px; letter-spacing: 3px;
+    color: var(--fg-4); text-transform: uppercase; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+  .recov-head-l { display: flex; align-items: center; gap: 8px; }
+  .recov-head-l::before { content:''; width: 5px; height: 5px;
+    background: var(--cy); border-radius: 50%; box-shadow: var(--cy-glow); }
+  .recov-wis { font-family: var(--f-mono); font-size: 10px;
+    color: var(--cy-hi); letter-spacing: 1px; }
+  .recov-wis b { font-size: 13px; font-weight: 600; }
+  .recov-list { display: flex; flex-direction: column; gap: 6px;
+    max-height: 130px; overflow-y: auto; margin-bottom: 10px; }
+  .recov-entry { display: flex; justify-content: space-between; gap: 10px;
+    padding: 8px 10px; background: rgba(255,255,255,0.02);
+    border: 1px solid var(--line); border-radius: 8px; font-size: 12px; }
+  .recov-entry .date { font-family: var(--f-mono); font-size: 10px;
+    color: var(--fg-4); letter-spacing: 1px; flex-shrink: 0; }
+  .recov-entry .reason { color: var(--fg-2); line-height: 1.4; }
+  .recov-entry.shielded { border-color: rgba(var(--cy-rgb), 0.3); }
+  .recov-entry.shielded .reason::after { content: '  · token spent'; color: var(--cy-hi);
+    font-family: var(--f-mono); font-size: 9px; letter-spacing: 1px; }
+  .recov-empty { font-size: 11px; color: var(--fg-5); padding: 4px 2px; font-style: italic; }
+  .recov-btn { width: 100%; padding: 10px;
+    background: rgba(var(--cy-rgb), 0.06); border: 1px solid rgba(var(--cy-rgb), 0.25);
+    color: var(--cy-hi); cursor: pointer; border-radius: 10px;
+    font-family: var(--f-mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    transition: all .2s; }
+  .recov-btn:hover { background: rgba(var(--cy-rgb), 0.12); border-color: var(--cy); }
+
+  /* ── MISS MODAL ── */
+  .miss-modal { position: fixed; inset: 0; z-index: 80; display: none;
+    background: rgba(2,5,16,0.94); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    padding: 20px; align-items: center; justify-content: center; }
+  .miss-modal.open { display: flex; animation: fadeIn .25s ease; }
+  .miss-inner { width: 100%; max-width: 420px; padding: 26px 22px; position: relative;
+    background: linear-gradient(180deg, rgba(13,18,40,0.97), rgba(8,12,28,0.97));
+    border: 1px solid rgba(var(--cy-rgb), 0.3); border-radius: 18px;
+    box-shadow: 0 30px 80px -20px rgba(0,0,0,0.7), 0 0 60px -10px rgba(var(--cy-rgb), 0.2);
+    animation: sysPop .4s cubic-bezier(.34,1.4,.64,1); }
+  .miss-tag { font-family: var(--f-mono); font-size: 10px; letter-spacing: 3px;
+    color: var(--cy); text-transform: uppercase; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px; }
+  .miss-tag::before { content:''; width: 5px; height: 5px;
+    background: var(--cy); border-radius: 50%; box-shadow: var(--cy-glow); }
+  .miss-title { font-family: var(--f-display); font-weight: 700; font-size: 22px;
+    color: var(--fg); letter-spacing: -.5px; margin-bottom: 8px; }
+  .miss-body { font-size: 13px; color: var(--fg-3); line-height: 1.6; margin-bottom: 16px; }
+  .miss-body b { color: var(--cy-hi); }
+  .miss-reasons { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 12px; }
+  .miss-reason { padding: 10px 8px; cursor: pointer; border-radius: 8px;
+    background: rgba(255,255,255,0.025); border: 1px solid var(--line);
+    font-family: var(--f-mono); font-size: 10px; letter-spacing: 1px; color: var(--fg-3);
+    text-transform: uppercase; transition: all .2s; text-align: center; }
+  .miss-reason:hover, .miss-reason.sel { border-color: var(--cy); color: var(--cy-hi);
+    background: rgba(var(--cy-rgb), 0.06); }
+  .miss-input { width: 100%; padding: 10px 12px; border-radius: 10px;
+    background: rgba(255,255,255,0.025); border: 1px solid var(--line);
+    color: var(--fg); font-family: inherit; font-size: 13px; outline: none;
+    resize: vertical; min-height: 60px; margin-bottom: 14px;
+    transition: border-color .2s; }
+  .miss-input:focus { border-color: var(--cy);
+    box-shadow: 0 0 0 3px rgba(var(--cy-rgb), 0.15); }
+  .miss-token-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    background: rgba(var(--cy-rgb), 0.05); border: 1px solid rgba(var(--cy-rgb), 0.25);
+    border-radius: 10px; margin-bottom: 14px; cursor: pointer; transition: all .2s; }
+  .miss-token-row.hidden { display: none; }
+  .miss-token-row:hover { background: rgba(var(--cy-rgb), 0.1); }
+  .miss-token-cb { width: 18px; height: 18px; border: 1.5px solid var(--cy);
+    border-radius: 4px; position: relative; flex-shrink: 0; transition: all .2s; }
+  .miss-token-row.checked .miss-token-cb { background: var(--cy); }
+  .miss-token-row.checked .miss-token-cb::after { content: ''; position: absolute;
+    left: 5px; top: 1px; width: 5px; height: 10px;
+    border: solid #020510; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+  .miss-token-txt { font-size: 12px; color: var(--fg-2); flex: 1; line-height: 1.4; }
+  .miss-token-txt b { color: var(--cy-hi); }
+  .miss-actions { display: flex; gap: 8px; }
+  .miss-actions button { flex: 1; padding: 12px;
+    border-radius: 10px; cursor: pointer; font-family: var(--f-mono);
+    font-size: 10px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase;
+    transition: all .2s; border: none; }
+  .miss-cancel { background: rgba(255,255,255,0.03); border: 1px solid var(--line) !important;
+    color: var(--fg-2); }
+  .miss-cancel:hover { border-color: var(--cy); color: var(--cy-hi); }
+  .miss-confirm { background: linear-gradient(135deg, var(--cy-hi), var(--cy)); color: #020510;
+    box-shadow: 0 8px 20px -4px rgba(var(--cy-rgb), 0.4), inset 0 1px 0 rgba(255,255,255,0.3); }
+  .miss-confirm:active { transform: scale(0.97); }
+
   /* day-of-week insight (detail view) */
   .dow-card { padding: 14px 16px; border-radius: 12px;
     background: linear-gradient(180deg, rgba(13,18,40,0.6), rgba(8,12,28,0.6));
@@ -1073,6 +1222,21 @@
         <div class="stat"><div class="stat-label">30 day</div><div class="stat-val dim" id="s-pct">0%</div></div>
       </div>
 
+      <div class="chain-card" id="chain-card">
+        <div class="chain-head">Quest chain · habit stacking</div>
+        <select id="chain-select"><option value="">— No chain set —</option></select>
+        <div class="chain-hint">After this habit · the chained one will highlight + scroll into view</div>
+      </div>
+
+      <div class="recov-card" id="recov-card">
+        <div class="recov-head">
+          <span class="recov-head-l">Recovery log</span>
+          <span class="recov-wis"><b id="recov-wis">0</b> Wisdom</span>
+        </div>
+        <div class="recov-list" id="recov-list"></div>
+        <button class="recov-btn" id="recov-btn">＋ Log a miss</button>
+      </div>
+
       <div class="dow-card" id="dow-card">
         <div class="dow-head">Best days · weekday consistency</div>
         <div class="dow-grid" id="dow-grid"></div>
@@ -1134,6 +1298,9 @@
         <div class="status-stat"><div class="status-stat-lab">Total XP</div><div class="status-stat-val" id="status-total">0</div></div>
         <div class="status-stat"><div class="status-stat-lab">Top streak</div><div class="status-stat-val" id="status-streak">0d</div></div>
         <div class="status-stat"><div class="status-stat-lab">Days logged</div><div class="status-stat-val dim" id="status-days">0</div></div>
+        <div class="status-stat"><div class="status-stat-lab">Rest tokens</div><div class="status-stat-val" id="status-tokens">0</div></div>
+        <div class="status-stat"><div class="status-stat-lab">Wisdom</div><div class="status-stat-val" id="status-wisdom">0</div></div>
+        <div class="status-stat"><div class="status-stat-lab">Class</div><div class="status-stat-val dim" id="status-class" style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;font-family:var(--f-mono)">—</div></div>
       </div>
       <button class="status-close" id="status-close">Close</button>
     </div>
@@ -1153,29 +1320,84 @@
     </div>
   </div>
 
-  <!-- Intro / about -->
+  <!-- Intro / Awakening overlay -->
   <div class="intro" id="intro">
     <div class="intro-inner">
-      <div class="intro-tag">About this app</div>
-      <div class="intro-title"><em>PULSE</em></div>
-      <div class="intro-body">
-        Minimal habit tracker. <b>One tap a day</b> per habit, and every long-press opens a
-        <b>per-habit consistency graph</b> — a 12-month heatmap plus a 30-day rolling-completion
-        line. Single-file vanilla PWA, single cyan accent, offline-first, installable on phone.
+      <!-- Step 1: welcome/about -->
+      <div class="awaken-step show" id="awaken-welcome">
+        <div class="intro-tag">System Notice</div>
+        <div class="intro-title"><em>PULSE</em></div>
+        <div class="intro-body">
+          A habit tracker for people who want to feel like they're <b>leveling up
+          an actual character</b>. One tap a day per habit. Every tap awards XP.
+          Every streak unlocks Rest Tokens. Every miss adds Wisdom — if you log
+          why. Single-file vanilla PWA, offline-first, installable on phone.
+        </div>
+        <div class="intro-list">
+          <div><b>Yes / no habits</b> · tap the circle to mark today done</div>
+          <div><b>Tally habits</b> (water, pages, min…) · pick a unit when you add them. Each tap adds <b>one step</b> (e.g. +8 oz, +5 pages). When the target hits, the day marks done.</div>
+          <div><b>Quest chains</b> · chain habit B to habit A so it lights up the moment A is done</div>
+          <div><b>Rest tokens</b> · earn 1 per 7-day streak. Spend it on a miss to keep the streak alive.</div>
+          <div><b>Tap name or ›</b> · open detail view (graph + chain + recovery log + rename / delete)</div>
+        </div>
+        <div class="intro-actions">
+          <button class="intro-secondary" id="intro-clear">Reset data</button>
+          <button class="intro-primary" id="awaken-next">Awaken</button>
+        </div>
+        <div class="intro-foot">
+          Built by <a href="https://github.com/zachwenger" target="_blank" rel="noopener">@zachwenger</a> ·
+          <a href="https://github.com/zachwenger/pulse-habit-tracker" target="_blank" rel="noopener">Source</a>
+        </div>
       </div>
-      <div class="intro-list">
-        <div><b>Yes / no habits</b> · tap the circle to mark today done</div>
-        <div><b>Tally habits</b> (water, pages, min…) · pick a unit when you add them. Each tap adds <b>one step</b> (e.g. +8 oz, +5 pages). When the target hits, the day marks done.</div>
-        <div><b>Tap name or ›</b> · open the consistency graph + rename / set target / delete</div>
-        <div><b>Shift-click the circle</b> (desktop) · enter a custom amount</div>
+      <!-- Step 2: class picker (only shows on first launch) -->
+      <div class="awaken-step" id="awaken-class">
+        <div class="intro-tag">Awakening · Choose Class</div>
+        <div class="intro-title">Choose your <em>class</em>.</div>
+        <div class="intro-body">
+          Your class is just a flavour — a starter pack of habits + a title that
+          shows up in your Hunter Status. You can change it later. Three habits
+          will be added when you confirm.
+        </div>
+        <div class="class-grid" id="class-grid"></div>
+        <div class="intro-actions">
+          <button class="intro-secondary" id="awaken-skip">Skip · I'll add my own</button>
+          <button class="intro-primary" id="awaken-confirm" disabled style="opacity:0.5">Confirm</button>
+        </div>
+        <div class="intro-foot">
+          A class is cosmetic + suggests starter habits.<br>It doesn't lock you out of anything.
+        </div>
       </div>
-      <div class="intro-actions">
-        <button class="intro-secondary" id="intro-clear">Reset data</button>
-        <button class="intro-primary" id="intro-go">Start</button>
+    </div>
+  </div>
+
+  <!-- Recovery / miss modal -->
+  <div class="miss-modal" id="miss-modal">
+    <div class="miss-inner">
+      <div class="miss-tag">Recovery Log</div>
+      <div class="miss-title" id="miss-title">Log a miss</div>
+      <div class="miss-body">
+        Missing a day isn't failure — it's data. Tag what happened and you'll
+        earn <b>+1 Wisdom</b>. Hunters who track their misses break fewer streaks
+        long-term.
       </div>
-      <div class="intro-foot">
-        Built by <a href="https://github.com/zachwenger" target="_blank" rel="noopener">@zachwenger</a> ·
-        <a href="https://github.com/zachwenger/pulse" target="_blank" rel="noopener">Source</a>
+      <div class="miss-reasons" id="miss-reasons">
+        <div class="miss-reason" data-r="travel">Travel</div>
+        <div class="miss-reason" data-r="sick">Sick</div>
+        <div class="miss-reason" data-r="tired">Too tired</div>
+        <div class="miss-reason" data-r="busy">Too busy</div>
+        <div class="miss-reason" data-r="forgot">Forgot</div>
+        <div class="miss-reason" data-r="chose">Chose not to</div>
+      </div>
+      <textarea class="miss-input" id="miss-input" placeholder="Optional · what really happened (anything 0–300 chars)" maxlength="300"></textarea>
+      <div class="miss-token-row hidden" id="miss-token-row">
+        <div class="miss-token-cb"></div>
+        <div class="miss-token-txt">
+          Spend <b>1 Rest Token</b> to keep your streak alive · <b id="miss-token-count">0</b> available
+        </div>
+      </div>
+      <div class="miss-actions">
+        <button class="miss-cancel" id="miss-cancel">Cancel</button>
+        <button class="miss-confirm" id="miss-confirm">Log Miss</button>
       </div>
     </div>
   </div>
@@ -1245,6 +1467,21 @@
     h.tod = ['morning','afternoon','evening','anytime'].includes(h.tod) ? h.tod : 'anytime';
     h.polarity = (h.polarity === 'neg') ? 'neg' : 'pos';
     h.quality = (h.quality && typeof h.quality === 'object') ? h.quality : {};
+    // chain: optional habitId of the habit to highlight when this one completes
+    h.chain = (typeof h.chain === 'string' && h.chain) ? h.chain.slice(0, 16) : null;
+    // misses: { 'YYYY-MM-DD': { reason, note, shielded } } — recovery log entries
+    h.misses = (h.misses && typeof h.misses === 'object' && !Array.isArray(h.misses)) ? h.misses : {};
+    const cleanMisses = {};
+    for (const [k, v] of Object.entries(h.misses)) {
+      if (typeof k === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(k) && v && typeof v === 'object') {
+        cleanMisses[k] = {
+          reason: safeStr(v.reason, 24),
+          note:   safeStr(v.note,   300),
+          shielded: v.shielded === true,
+        };
+      }
+    }
+    h.misses = cleanMisses;
     if (!h.created || !isFinite(h.created)) h.created = Date.now();
     return h;
   }
@@ -1288,20 +1525,58 @@
   const TOD_LABELS = { morning: 'Morning', afternoon: 'Afternoon', evening: 'Evening', anytime: 'Anytime' };
   const TOD_DEFAULT_HOUR = { morning: 8, afternoon: 13, evening: 19, anytime: 0 };
 
-  let habits = Store.get('habits', null);
-  if (habits === null) {
-    habits = [
-      { id: uid(), name: 'Train or move',  log: [], target: 0,  unit: '',     step: 0,    qty: {}, color: 'cyan',   tod: 'morning',   polarity: 'pos', quality: {}, created: Date.now() },
-      { id: uid(), name: 'Read',           log: [], target: 20, unit: 'pages',step: 5,    qty: {}, color: 'amber',  tod: 'evening',   polarity: 'pos', quality: {}, created: Date.now() },
-      { id: uid(), name: 'Drink water',    log: [], target: 64, unit: 'oz',   step: 8,    qty: {}, color: 'lime',   tod: 'anytime',   polarity: 'pos', quality: {}, created: Date.now() },
-      { id: uid(), name: 'Phone in bed',   log: [], target: 0,  unit: '',     step: 0,    qty: {}, color: 'rose',   tod: 'evening',   polarity: 'neg', quality: {}, created: Date.now() },
-    ];
-    Store.set('habits', habits);
-  }
+  // ─── HUNTER CLASSES ───
+  // Each class is a starter-habit pack + a cosmetic title shown on Hunter Status.
+  // Class is cosmetic-only — it doesn't gate any feature. The starter habits get
+  // seeded ONLY on first launch when the user picks a class. Choosing "Free"
+  // skips habit seeding entirely.
+  const CLASSES = [
+    { id: 'warrior',  name: 'Warrior',  codename: 'Iron Body',     blurb: 'Train, sleep, eat. Move the body daily.',
+      starters: [
+        { name: 'Train or move',  target: 0,  unit: '',     step: 0,    color: 'cyan',   tod: 'morning' },
+        { name: 'Sleep 8h',       target: 0,  unit: '',     step: 0,    color: 'violet', tod: 'evening' },
+        { name: 'Drink water',    target: 64, unit: 'oz',   step: 8,    color: 'lime',   tod: 'anytime' },
+      ] },
+    { id: 'scholar',  name: 'Scholar',  codename: 'Mind Forge',    blurb: 'Read, write, learn. Compounding interest on attention.',
+      starters: [
+        { name: 'Read',           target: 20, unit: 'pages',step: 5,    color: 'amber',  tod: 'evening' },
+        { name: 'Deep work',      target: 90, unit: 'min',  step: 25,   color: 'cyan',   tod: 'morning' },
+        { name: 'Journal',        target: 0,  unit: '',     step: 0,    color: 'violet', tod: 'evening' },
+      ] },
+    { id: 'monk',     name: 'Monk',     codename: 'Stillness',     blurb: 'Subtract noise. Meditation, no-phone time, quiet.',
+      starters: [
+        { name: 'Meditate',       target: 10, unit: 'min',  step: 5,    color: 'violet', tod: 'morning' },
+        { name: 'Phone in bed',   target: 0,  unit: '',     step: 0,    color: 'rose',   tod: 'evening',   polarity: 'neg' },
+        { name: 'Walk outside',   target: 20, unit: 'min',  step: 5,    color: 'lime',   tod: 'afternoon' },
+      ] },
+    { id: 'builder',  name: 'Builder',  codename: 'The Maker',     blurb: 'Ship daily. Compounding outputs over inputs.',
+      starters: [
+        { name: 'Ship something', target: 0,  unit: '',     step: 0,    color: 'cyan',   tod: 'morning' },
+        { name: 'Learn one thing',target: 0,  unit: '',     step: 0,    color: 'amber',  tod: 'afternoon' },
+        { name: 'Doomscroll',     target: 0,  unit: '',     step: 0,    color: 'rose',   tod: 'evening',   polarity: 'neg' },
+      ] },
+    { id: 'athlete',  name: 'Athlete',  codename: 'Edge Runner',   blurb: 'Cardio, lifts, recovery, fuel.',
+      starters: [
+        { name: 'Steps',          target: 10000, unit: 'steps', step: 1000, color: 'lime', tod: 'anytime' },
+        { name: 'Lift',           target: 0,  unit: '',     step: 0,    color: 'cyan',   tod: 'afternoon' },
+        { name: 'Stretch',        target: 10, unit: 'min',  step: 5,    color: 'violet', tod: 'evening' },
+      ] },
+    { id: 'free',     name: 'Free',     codename: 'Wanderer',      blurb: 'Skip the starters. Define your own from scratch.',
+      starters: [] },
+  ];
+  function classById(id) { return CLASSES.find(c => c.id === id) || null; }
+
+  // First launch flag → drives the awaken flow. Habits stays null/empty until
+  // the user confirms a class (or hits "Skip").
+  const firstLaunch = Store.get('habits', null) === null;
+  let habits = Store.get('habits', null) || [];
   // Validate + clamp every habit on load — drops malformed entries
   // (defends against manual localStorage tampering or import of bad data).
   if (!Array.isArray(habits)) habits = [];
   habits = habits.map(validateHabit).filter(Boolean).slice(0, HARD_LIMITS.MAX_HABITS);
+  // Strip orphan chain references (chain pointing to a deleted habit)
+  const _ids = new Set(habits.map(h => h.id));
+  habits.forEach(h => { if (h.chain && !_ids.has(h.chain)) h.chain = null; });
   // Back-fill step from preset if missing (post-validate so we know shape is sane)
   habits.forEach(h => {
     if (!h.step) {
@@ -1563,7 +1838,25 @@
         document.dispatchEvent(new CustomEvent('pulse-tick', { detail: { streak: s, habit: h.name } }));
       }
       Store.set('habits', habits);
+      const justCompleted = !wasDone && h.log.includes(t);
+      const chainId = justCompleted ? h.chain : null;
       renderList();
+      // Quest-chain highlight: scroll to + glow the chained habit so the user
+      // knows what's next. Lightweight — no auto-tap, just visual cue.
+      if (chainId) {
+        const next = habits.find(x => x.id === chainId);
+        if (next) {
+          const target = listEl.querySelector(`.habit[data-id="${chainId}"]`);
+          if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            target.classList.remove('chained-glow');
+            void target.offsetWidth;
+            target.classList.add('chained-glow');
+            setTimeout(() => target.classList.remove('chained-glow'), 2300);
+          }
+          toast(`Next quest · <b>${esc(next.name)}</b>`);
+        }
+      }
     }
   });
 
@@ -1734,6 +2027,8 @@
     renderHeat(h.log);
     renderChart(h.log);
     renderDoW(h.log);
+    renderChainPicker(h);
+    renderRecovery(h);
     // stagger fade-in heatmap cells (wave effect)
     requestAnimationFrame(() => {
       const cells = document.querySelectorAll('#heat .heat-cell');
@@ -1744,6 +2039,113 @@
     detail.classList.add('open');
     document.body.style.overflow = 'hidden';
   }
+
+  /* ===== Chain picker (habit stacking) ===== */
+  function renderChainPicker(h) {
+    const sel = document.getElementById('chain-select');
+    const opts = ['<option value="">— No chain set —</option>'];
+    habits.forEach(x => {
+      if (x.id === h.id) return; // can't chain to self
+      const selected = h.chain === x.id ? 'selected' : '';
+      opts.push(`<option value="${x.id}" ${selected}>${esc(x.name)}</option>`);
+    });
+    sel.innerHTML = opts.join('');
+  }
+  document.getElementById('chain-select').addEventListener('change', e => {
+    const h = habits.find(x => x.id === detailId); if (!h) return;
+    h.chain = e.target.value || null;
+    Store.set('habits', habits);
+    if (h.chain) {
+      const next = habits.find(x => x.id === h.chain);
+      toast(`Chained → <b>${esc(next?.name || '')}</b>`);
+    }
+  });
+
+  /* ===== Recovery log + Miss modal ===== */
+  function getWisdom() { return Store.get('hunter.wisdom', 0); }
+  function setWisdom(v) { Store.set('hunter.wisdom', v); }
+  function getTokens() { return Store.get('hunter.tokens', 0); }
+  function setTokens(v) { Store.set('hunter.tokens', v); }
+
+  function renderRecovery(h) {
+    const list = document.getElementById('recov-list');
+    document.getElementById('recov-wis').textContent = getWisdom().toLocaleString();
+    const entries = Object.entries(h.misses).sort((a,b) => b[0].localeCompare(a[0])).slice(0, 8);
+    if (!entries.length) {
+      list.innerHTML = `<div class="recov-empty">No misses logged. Every Hunter falls — log it when it happens.</div>`;
+      return;
+    }
+    list.innerHTML = entries.map(([date, m]) => {
+      const reason = m.reason ? m.reason.charAt(0).toUpperCase() + m.reason.slice(1) : 'Logged';
+      const note = m.note ? ` · ${esc(m.note)}` : '';
+      return `<div class="recov-entry ${m.shielded ? 'shielded' : ''}">
+        <span class="reason"><b>${esc(reason)}</b>${note}</span>
+        <span class="date">${date.slice(5)}</span>
+      </div>`;
+    }).join('');
+  }
+  const missModal = document.getElementById('miss-modal');
+  const missInput = document.getElementById('miss-input');
+  const missTokenRow = document.getElementById('miss-token-row');
+  const missTokenCount = document.getElementById('miss-token-count');
+  let missReason = '';
+  function openMissModal() {
+    const h = habits.find(x => x.id === detailId); if (!h) return;
+    document.getElementById('miss-title').textContent = `Log miss · ${h.name}`;
+    missReason = '';
+    missInput.value = '';
+    document.querySelectorAll('.miss-reason').forEach(x => x.classList.remove('sel'));
+    // Show token option only if user has tokens AND has an active streak right now
+    const t = today();
+    const hasStreak = streak(h.log) >= 1;
+    const tokens = getTokens();
+    if (tokens > 0 && hasStreak && !h.log.includes(t)) {
+      missTokenRow.classList.remove('hidden');
+      missTokenRow.classList.remove('checked');
+      missTokenCount.textContent = tokens.toLocaleString();
+    } else {
+      missTokenRow.classList.add('hidden');
+    }
+    missModal.classList.add('open');
+  }
+  function closeMissModal() { missModal.classList.remove('open'); }
+  document.getElementById('recov-btn').addEventListener('click', openMissModal);
+  document.getElementById('miss-cancel').addEventListener('click', closeMissModal);
+  document.getElementById('miss-reasons').addEventListener('click', e => {
+    const r = e.target.closest('.miss-reason'); if (!r) return;
+    missReason = r.dataset.r;
+    document.querySelectorAll('.miss-reason').forEach(x => x.classList.toggle('sel', x === r));
+  });
+  missTokenRow.addEventListener('click', () => {
+    missTokenRow.classList.toggle('checked');
+  });
+  missModal.addEventListener('click', e => { if (e.target === missModal) closeMissModal(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && missModal.classList.contains('open')) closeMissModal();
+  });
+  document.getElementById('miss-confirm').addEventListener('click', () => {
+    const h = habits.find(x => x.id === detailId); if (!h) return;
+    const t = today();
+    const note = safeStr(missInput.value, 300);
+    const reason = missReason || (note ? 'other' : 'logged');
+    const useToken = !missTokenRow.classList.contains('hidden')
+                  && missTokenRow.classList.contains('checked')
+                  && getTokens() > 0;
+    h.misses = h.misses || {};
+    h.misses[t] = { reason, note, shielded: useToken };
+    if (useToken) {
+      // Token preserves the streak by logging today as "done"
+      if (!h.log.includes(t)) h.log.push(t);
+      setTokens(getTokens() - 1);
+      toast(`Token spent · streak preserved.`);
+    }
+    setWisdom(getWisdom() + 1);
+    Store.set('habits', habits);
+    closeMissModal();
+    renderRecovery(h);
+    renderHunter();
+    renderList();
+  });
   function closeDetail() {
     detail.classList.remove('open');
     document.body.style.overflow = '';
@@ -1959,7 +2361,10 @@
     document.getElementById('status-rank-badge').classList.toggle('s', rank === 'S');
     document.getElementById('status-lv').textContent = level;
     document.getElementById('status-rank-name').textContent = RANK_NAMES[rank];
-    document.getElementById('status-codename').innerHTML = '<em>' + CODENAMES[rank] + '</em>';
+    // Class codename overrides rank codename if a class is set (more personal)
+    const klass = classById(Store.get('hunter.class', ''));
+    const codename = klass ? klass.codename : CODENAMES[rank];
+    document.getElementById('status-codename').innerHTML = '<em>' + esc(codename) + '</em>';
     document.getElementById('status-xpfill').style.width = (xpInLevel / xpToNext * 100) + '%';
     document.getElementById('status-xp-cur').innerHTML = `<b>${xpInLevel.toLocaleString()}</b> / ${xpToNext.toLocaleString()} XP`;
     document.getElementById('status-xp-to').textContent = (xpToNext - xpInLevel).toLocaleString();
@@ -1968,6 +2373,9 @@
     document.getElementById('status-streak').textContent = top + 'd';
     const totalDays = habits.reduce((s, h) => s + h.log.length, 0);
     document.getElementById('status-days').textContent = totalDays.toLocaleString();
+    document.getElementById('status-tokens').textContent = getTokens().toLocaleString();
+    document.getElementById('status-wisdom').textContent = getWisdom().toLocaleString();
+    document.getElementById('status-class').textContent = klass ? klass.name : '—';
   }
 
   function openStatus() { document.getElementById('status-modal').classList.add('open');
@@ -2010,9 +2418,10 @@
   document.addEventListener('pulse-tick', e => {
     addXP(10, 'habit');
     const s = e.detail?.streak || 0;
-    if (s === 7) addXP(50, 'streak7');
-    else if (s === 30) addXP(200, 'streak30');
-    else if (s === 100) addXP(1000, 'streak100');
+    if (s === 7) { addXP(50, 'streak7');   setTokens(getTokens() + 1);
+                   setTimeout(() => toast(`<em>+1 Rest Token</em> · spend it on a miss to save your streak.`), 600); }
+    else if (s === 30) { addXP(200, 'streak30');  setTokens(getTokens() + 2); }
+    else if (s === 100){ addXP(1000,'streak100'); setTokens(getTokens() + 5); }
   });
   // initial paint
   renderHunter();
@@ -2132,12 +2541,92 @@
      Streak counts consecutive clean days. Display swaps to "Xd clean".
      No behaviour change needed; the render shows the right labels.       */
 
-  /* ===== Intro overlay (one-shot first run + ? button always opens it) ===== */
+  /* ===== Intro / Awakening overlay =====
+     First launch  → 2 steps: welcome → class picker → start (seeds habits)
+     ? button      → just shows step 1 as an "about" panel (no class pick)  */
   const intro = document.getElementById('intro');
-  function openIntro() { intro.classList.add('open'); document.body.style.overflow = 'hidden'; }
-  function closeIntro() { intro.classList.remove('open'); document.body.style.overflow = ''; Store.set('introSeen', true); }
-  document.getElementById('info-btn').addEventListener('click', openIntro);
-  document.getElementById('intro-go').addEventListener('click', closeIntro);
+  const stepWelcome = document.getElementById('awaken-welcome');
+  const stepClass = document.getElementById('awaken-class');
+  let chosenClassId = null;
+
+  function showStep(which) {
+    [stepWelcome, stepClass].forEach(s => s.classList.toggle('show', s.id === which));
+  }
+  function openIntro(showClassStep) {
+    intro.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    showStep(showClassStep ? 'awaken-class' : 'awaken-welcome');
+    if (showClassStep) renderClassGrid();
+  }
+  function closeIntro() {
+    intro.classList.remove('open');
+    document.body.style.overflow = '';
+    Store.set('introSeen', true);
+  }
+
+  function renderClassGrid() {
+    const grid = document.getElementById('class-grid');
+    grid.innerHTML = CLASSES.map(c => `
+      <div class="class-card ${c.id === chosenClassId ? 'sel' : ''}" data-cls="${c.id}">
+        <div class="class-codename">${esc(c.codename)}</div>
+        <div class="class-name">${esc(c.name)}</div>
+        <div class="class-starters">${esc(c.blurb)}</div>
+      </div>
+    `).join('');
+    const btn = document.getElementById('awaken-confirm');
+    btn.disabled = !chosenClassId;
+    btn.style.opacity = chosenClassId ? '1' : '0.5';
+  }
+  document.getElementById('class-grid').addEventListener('click', e => {
+    const card = e.target.closest('.class-card'); if (!card) return;
+    chosenClassId = card.dataset.cls;
+    renderClassGrid();
+  });
+
+  function seedClassHabits(klass) {
+    if (!klass || !klass.starters?.length) return;
+    klass.starters.forEach(s => {
+      habits.push({
+        id: uid(), name: s.name, log: [], created: Date.now(),
+        target: s.target || 0, unit: s.unit || '', step: s.step || 0, qty: {},
+        color: s.color || 'cyan', tod: s.tod || 'anytime',
+        polarity: s.polarity || 'pos', quality: {}, chain: null, misses: {},
+      });
+    });
+    // Chain in order: starter[i] → starter[i+1] so the user sees quest chains in action
+    for (let i = 0; i < habits.length - 1; i++) {
+      if (habits[i + 1]) habits[i].chain = habits[i + 1].id;
+    }
+  }
+
+  document.getElementById('info-btn').addEventListener('click', () => openIntro(false));
+  document.getElementById('awaken-next').addEventListener('click', () => {
+    // If this is the first launch → go to class picker. Otherwise just close.
+    if (firstLaunch && !Store.get('introSeen', false)) {
+      chosenClassId = null;
+      showStep('awaken-class');
+      renderClassGrid();
+    } else {
+      closeIntro();
+    }
+  });
+  document.getElementById('awaken-skip').addEventListener('click', () => {
+    Store.set('hunter.class', 'free');
+    Store.set('habits', habits);
+    closeIntro();
+    renderHunter();
+    renderList();
+  });
+  document.getElementById('awaken-confirm').addEventListener('click', () => {
+    if (!chosenClassId) return;
+    Store.set('hunter.class', chosenClassId);
+    seedClassHabits(classById(chosenClassId));
+    Store.set('habits', habits);
+    closeIntro();
+    renderHunter();
+    renderList();
+    toast(`Awakened · <b>${esc(classById(chosenClassId).name)}</b>`);
+  });
   document.getElementById('intro-clear').addEventListener('click', () => {
     if (!confirm('Wipe all habits and history? This cannot be undone.')) return;
     Object.keys(localStorage).filter(k => k.startsWith('pulse.')).forEach(k => localStorage.removeItem(k));
@@ -2147,7 +2636,7 @@
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && intro.classList.contains('open')) closeIntro();
   });
-  if (!Store.get('introSeen', false)) openIntro();
+  if (!Store.get('introSeen', false)) openIntro(false);
 
   /* ===== PWA + auto-update glue ─────────────────────────────────
      Every page load:

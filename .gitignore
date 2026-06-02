@@ -8,3 +8,4 @@ node_modules/
 
 # Claude per-user settings
 .claude/settings.local.json
+.claude/launch.json

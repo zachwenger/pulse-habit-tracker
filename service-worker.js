@@ -6,7 +6,7 @@
                 so a deployed change reaches every open tab + installed
                 PWA on the next request, without requiring incognito.
 */
-const CACHE = 'pulse-v12';
+const CACHE = 'pulse-v13';
 const ASSETS = ['./', './index.html', './manifest.json', './icon.svg'];
 
 self.addEventListener('install', e => {
