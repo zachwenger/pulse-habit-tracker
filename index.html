@@ -2632,9 +2632,18 @@
     Object.keys(localStorage).filter(k => k.startsWith('pulse.')).forEach(k => localStorage.removeItem(k));
     location.reload();
   });
-  intro.addEventListener('click', e => { if (e.target === intro) closeIntro(); });
+  // On the class-pick step, force the user to choose Skip or Confirm —
+  // backdrop click + Esc are disabled so they can't accidentally bail and
+  // end up with a half-finished onboarding.
+  intro.addEventListener('click', e => {
+    if (e.target !== intro) return;
+    if (stepClass.classList.contains('show')) return;
+    closeIntro();
+  });
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && intro.classList.contains('open')) closeIntro();
+    if (e.key !== 'Escape' || !intro.classList.contains('open')) return;
+    if (stepClass.classList.contains('show')) return;
+    closeIntro();
   });
   if (!Store.get('introSeen', false)) openIntro(false);
 
